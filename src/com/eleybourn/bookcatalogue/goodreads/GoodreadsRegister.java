@@ -110,6 +110,9 @@ public class GoodreadsRegister extends BookCatalogueActivity {
 				@Override
 				public void onClick(View v) {
 					GoodreadsManager.forgetCredentials();
+					
+					finish();
+					startActivity(getIntent());
 				}});
 		} else {
 			blurb.setVisibility(View.GONE);
@@ -138,7 +141,12 @@ public class GoodreadsRegister extends BookCatalogueActivity {
 			@Override
 			public void onFinish(SimpleTaskQueueProgressFragment fragment, Exception exception) {
 				if (mMessage != 0)
+				{
 					fragment.showToast(mMessage);
+				
+					activity.finish();
+					activity.startActivity(activity.getIntent());
+				}
 			}
 
 		};

@@ -37,6 +37,8 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Toast;
 
+import com.eleybourn.bookcatalogue.babelio.BabelioRegister;
+import com.eleybourn.bookcatalogue.babelio.BabelioUtils;
 import com.eleybourn.bookcatalogue.backup.BackupManager;
 import com.eleybourn.bookcatalogue.booklist.BooklistStyles;
 import com.eleybourn.bookcatalogue.dialogs.StandardDialogs;
@@ -214,19 +216,6 @@ public class AdministrationFunctions extends ActivityWithTasks {
 			});
 		}
 
-		/* LibraryThing auth Link */
-		View ltAuth = findViewById(R.id.librarything_auth);
-		// Make line flash when clicked.
-		ltAuth.setBackgroundResource(android.R.drawable.list_selector_background);
-		ltAuth.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				Intent i = new Intent(AdministrationFunctions.this, AdministrationLibraryThing.class);
-				startActivity(i);
-				return;
-			}
-		});
-
 		/* Goodreads auth Link */
 		View grAuth = findViewById(R.id.goodreads_auth);
 		// Make line flash when clicked.
@@ -235,6 +224,74 @@ public class AdministrationFunctions extends ActivityWithTasks {
 			@Override
 			public void onClick(View v) {
 				Intent i = new Intent(AdministrationFunctions.this, GoodreadsRegister.class);
+				startActivity(i);
+				return;
+			}
+		});
+
+		/* Babelio SYNC Link */
+		{
+			View v = findViewById(R.id.sync_with_babelio_label);
+			// Make line flash when clicked.
+			v.setBackgroundResource(android.R.drawable.list_selector_background);
+			v.setOnClickListener(new OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					BabelioUtils.importAllFromBabelio(AdministrationFunctions.this, true);
+					return;
+				}
+			});
+		}
+
+		/* Babelio IMPORT Link */
+		{
+			View v = findViewById(R.id.import_all_from_babelio_label);
+			// Make line flash when clicked.
+			v.setBackgroundResource(android.R.drawable.list_selector_background);
+			v.setOnClickListener(new OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					BabelioUtils.importAllFromBabelio(AdministrationFunctions.this, false);
+					return;
+				}
+			});
+		}
+
+		/* Babelio EXPORT Link */
+		{
+			View v = findViewById(R.id.send_books_to_babelio_label);
+			// Make line flash when clicked.
+			v.setBackgroundResource(android.R.drawable.list_selector_background);
+			v.setOnClickListener(new OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					BabelioUtils.sendBooksToBabelio(AdministrationFunctions.this);
+					return;
+				}
+			});
+		}
+
+		/* Babelio auth Link */
+		View baAuth = findViewById(R.id.babelio_auth);
+		// Make line flash when clicked.
+		baAuth.setBackgroundResource(android.R.drawable.list_selector_background);
+		baAuth.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Intent i = new Intent(AdministrationFunctions.this, BabelioRegister.class);
+				startActivity(i);
+				return;
+			}
+		});
+
+		/* LibraryThing auth Link */
+		View ltAuth = findViewById(R.id.librarything_auth);
+		// Make line flash when clicked.
+		ltAuth.setBackgroundResource(android.R.drawable.list_selector_background);
+		ltAuth.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Intent i = new Intent(AdministrationFunctions.this, AdministrationLibraryThing.class);
 				startActivity(i);
 				return;
 			}

@@ -55,6 +55,7 @@ import android.widget.LinearLayout.LayoutParams;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.eleybourn.bookcatalogue.babelio.BabelioManager;
 import com.eleybourn.bookcatalogue.booklist.BooklistGroup.RowKinds;
 import com.eleybourn.bookcatalogue.booklist.BooklistPreferencesActivity;
 import com.eleybourn.bookcatalogue.booklist.BooklistRowView;
@@ -864,6 +865,21 @@ public class BooksMultitypeListHandler implements MultitypeListHandler {
 			QueueManager qm = BookCatalogueApp.getQueueManager();
 			SendOneBookTask task = new SendOneBookTask(rowView.getBookId());
 			qm.enqueueTask(task, BcQueueManager.QUEUE_MAIN, 0);
+			return true;
+
+		case R.id.MENU_SEND_BOOK_TO_BA:
+			// Get a BabelioManager and make sure we are authorized.
+			BabelioManager baMgr = new BabelioManager(true);
+			try {
+				baMgr.hasValidCredentials();
+			} catch (com.eleybourn.bookcatalogue.babelio.BabelioManager.Exceptions.NetworkException e) {
+				
+				Toast.makeText(context, e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
+			}
+			// get a QueueManager and queue the task.
+			QueueManager ba_qm = BookCatalogueApp.getQueueManager();
+			SendOneBookTask ba_task = new SendOneBookTask(rowView.getBookId());
+			ba_qm.enqueueTask(ba_task, BcQueueManager.QUEUE_MAIN, 0);
 			return true;
 
 		case R.id.MENU_EDIT_SERIES:

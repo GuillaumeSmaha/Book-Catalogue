@@ -336,6 +336,102 @@ public class BookEvents {
 	};
 
 	/**
+	 * Subclass of BookEvent that is the base class for all Event objects resulting from 
+	 * sending books to Babelio.
+	 * 
+	 * @author Philip Warner
+	 */
+	public static class BaSendBookEvent extends BookEvent {
+
+		private static final long serialVersionUID = -7899495164638204636L;
+
+		public BaSendBookEvent(long bookId, String message) {
+			super(bookId, message);
+		}
+
+		public BaSendBookEvent(long bookId, String message, Exception e) {
+			super(bookId, message, e);
+		}
+
+		/**
+		 * Resubmit this book and delete this event.
+		 */
+		public void retry() {
+			QueueManager qm = BookCatalogueApp.getQueueManager();
+			SendOneBookTask task = new SendOneBookTask(m_bookId);
+			// TODO: MAKE IT USE THE SAME QUEUE? Why????
+			qm.enqueueTask(task, BcQueueManager.QUEUE_SMALL_JOBS, 0);
+			qm.deleteEvent(this.getId());
+		}
+
+		/**
+		 * Override to allow modification of view.
+		 */
+		@Override
+		public boolean bindView(View view, Context context, final BindableItemSQLiteCursor cursor, Object appInfo) {
+			// Get the 'standard' view.
+			super.bindView(view, context, cursor, appInfo);
+
+			// get book details
+			final BookEventHolder holder = (BookEventHolder)ViewTagger.getTag(view, R.id.TAG_BOOK_EVENT_HOLDER);
+			final CatalogueDBAdapter db = (CatalogueDBAdapter)appInfo;
+			final BooksCursor booksCursor = db.getBookForBabelioCursor(m_bookId);
+			final BooksRowView book = booksCursor.getRowView();
+			try {
+				// Hide parts of view based on current book details.
+				if (booksCursor.moveToFirst()) {
+					if (book.getIsbn().equals("")) {
+						holder.retry.setVisibility(View.GONE);
+					} else {
+						holder.retry.setVisibility(View.VISIBLE);
+						ViewTagger.setTag(holder.retry, this);
+						holder.retry.setOnClickListener(m_retryButtonListener);
+					}
+				} else {
+					holder.retry.setVisibility(View.GONE);
+				}				
+			} finally {
+				// Always close
+				if (booksCursor != null)
+					booksCursor.close();				
+			}
+
+			return true;
+		}
+
+		/**
+		 * Override to allow a new context menu item.
+		 */
+		@Override
+		public void addContextMenuItems(final Context ctx, AdapterView<?> parent, final View v, final int position, final long id, ArrayList<ContextDialogItem> items, Object appInfo) {
+			super.addContextMenuItems(ctx, parent, v, position, id, items, appInfo);
+
+			final CatalogueDBAdapter db = (CatalogueDBAdapter)appInfo;
+			final BooksCursor booksCursor = db.getBookForBabelioCursor(m_bookId);
+			try {
+				final BooksRowView book = booksCursor.getRowView();
+				if (booksCursor.moveToFirst()) {
+					if (! (book.getIsbn().equals(""))) {
+						items.add(new ContextDialogItem(ctx.getString(R.string.retry_task), new Runnable() {
+							@Override
+							public void run() {
+								try {
+									BaSendBookEvent event = (BaSendBookEvent) ViewTagger.getTag(v, R.id.TAG_EVENT);
+									event.retry();
+									QueueManager.getQueueManager().deleteEvent(id);
+								} catch (Exception e) {
+									// not a book event?
+								}
+							}}));				
+					}
+				}				
+			} finally {				
+				booksCursor.close();
+			}
+		}
+	};
+
+	/**
 	 * Method to retry sending a book to goodreads.
 	 */
 	private static OnClickListener m_retryButtonListener = new OnClickListener() {
@@ -406,6 +502,62 @@ public class BookEvents {
 		@Override
 		public int getHint() {
 			return R.string.explain_goodreads_no_isbn;
+		}		
+
+	}
+	/*****************************************************************************************************
+	 * 
+	 * 'General' purpose exception class
+	 * 
+	 * @author Philip Warner
+	 */
+	public static class BaGeneralBookEvent extends BaSendBookEvent {
+
+		private static final long serialVersionUID = -6641299439464786603L;
+
+		public BaGeneralBookEvent(long bookId, Exception e, String message) {
+			super(bookId, message, e);
+		}
+	};
+
+	/**
+	 * Exception indicating the book's ISBN could not be found at Babelio
+	 * 
+	 * @author Philip Warner
+	 *
+	 */
+	public static class BaNoMatchEvent extends BaSendBookEvent implements HintOwner {
+
+		private static final long serialVersionUID = 1921148438072689131L;
+
+		public BaNoMatchEvent(long bookId) {
+			super(bookId, BookCatalogueApp.getResourceString(R.string.no_matching_book_found));
+		}
+
+		@Override
+		public int getHint() {
+			return R.string.explain_babelio_no_match;
+		}		
+
+	};
+
+	/**
+	 * Exception indicating the book's ISBN was blank
+	 * 
+	 * @author Philip Warner
+	 *
+	 */
+	public static class BaNoIsbnEvent extends BaSendBookEvent implements HintOwner {
+
+		private static final long serialVersionUID = -1554139571802062963L;
+
+		public BaNoIsbnEvent(long bookId) {
+			super(bookId, BookCatalogueApp.getResourceString(R.string.no_isbn_stored_for_book));
+		}
+
+		@Override
+		public int getHint() {
+			return R.string.explain_babelio_no_isbn;
 		}		
 
 	}

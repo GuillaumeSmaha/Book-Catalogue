@@ -20,16 +20,39 @@
 
 package com.eleybourn.bookcatalogue;
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import oauth.signpost.http.HttpResponse;
+
+import org.apache.http.Header;
+import org.apache.http.NameValuePair;
+import org.apache.http.ParseException;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.AbstractHttpMessage;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
 
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 
+import com.eleybourn.bookcatalogue.babelio.BabelioManager;
+import com.eleybourn.bookcatalogue.babelio.BabelioUtils;
 import com.eleybourn.bookcatalogue.compat.BookCatalogueActivity;
 import com.eleybourn.bookcatalogue.goodreads.GoodreadsManager;
 import com.eleybourn.bookcatalogue.goodreads.GoodreadsUtils;
@@ -97,6 +120,9 @@ public class MainMenu extends BookCatalogueActivity {
 		setOnClickListener(R.id.donate_label, mDonateHandler);
 		// Goodreads will be shown/hidden in onResume()
 		setOnClickListener(R.id.goodreads_label, mGoodreadsHandler);
+		setOnClickListener(R.id.babelio_label, mBabelioHandler);
+		
+		
 		
 		if (savedInstanceState == null)
 			HintManager.displayHint(this, R.string.hint_startup_screen, null);
@@ -121,6 +147,16 @@ public class MainMenu extends BookCatalogueActivity {
 			grItem.setVisibility(View.VISIBLE);
 		} else {
 			grItem.setVisibility(View.GONE);
+		}
+
+		
+		final boolean showBa = BabelioManager.hasCredentials();
+
+		View baItem = findViewById(R.id.babelio_label);
+		if (showBa) {
+			baItem.setVisibility(View.VISIBLE);
+		} else {
+			baItem.setVisibility(View.GONE);
 		}
 
 		Utils.initBackground(R.drawable.bc_background_gradient, this, true);	
@@ -194,6 +230,15 @@ public class MainMenu extends BookCatalogueActivity {
 	private OnClickListener mGoodreadsHandler = new OnClickListener() {
 		@Override public void onClick(View v) {
 			GoodreadsUtils.showGoodreadsOptions(MainMenu.this);
+		}
+	};
+
+	/**
+	 * Babelio Menu Handler
+	 */
+	private OnClickListener mBabelioHandler = new OnClickListener() {
+		@Override public void onClick(View v) {
+			BabelioUtils.showBabelioOptions(MainMenu.this);
 		}
 	};
 

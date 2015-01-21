@@ -55,7 +55,7 @@ import com.eleybourn.bookcatalogue.utils.ViewTagger;
 /**
  * Class to display and manage a cover image browser in a dialog.
  *
- * ENHANCE: For each ISBN returned by LT, add TWO images and get the second from GoodReads
+ * ENHANCE: For each ISBN returned by LT, add THREE images, get the second from GoodReads and get the third from Babelio
  * ENHANCE: (Somehow) remove non-existent images from ImageSelector. Probably start with 1 image and GROW it.
  * 
  * @author Philip Warner

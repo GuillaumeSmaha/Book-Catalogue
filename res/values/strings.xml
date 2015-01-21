@@ -70,6 +70,7 @@
     <string name="unknown_error">An unknown error occurred</string>
     <string name="notes">Notes</string>
     <string name="loaned_to">This book has been loaned to:</string>
+    <string name="has_been_loaned">This book has been loaned</string>
     <string name="nobody">Nobody</string>
     <string name="loan_to">Loan book to:</string>
     <string name="returned">Returned</string>
@@ -806,8 +807,6 @@ and you can edit the book via the options menu using the menu button or overflow
     <string name="show_first_level_and_book_count">Show first level heading and number of books</string>
     <string name="show_all_summary_details">Show all summary details</string>
 
-    <!-- Displayed when an archive operation fails -->
-    <string name="import_failed">Import failed.</string>
     <!-- Displayed when any write operation to the sd card fails -->
     <string name="please_check_sd_writable">Please check that the SD Card is writable, and has sufficient space.</string>
     <!-- Displayed when any write operation to the sd card fails -->
@@ -917,6 +916,87 @@ and you can edit the book via the options menu using the menu button or overflow
     <!-- Displayed in progress dialog when exporting covers in incremental mode -->
     <string name="covers_progress_incr">%1$s covers processed (%2$s missing, %3$s skipped)</string>
     
-    <!-- End: Added/Updated in [Next Version] -->
+    <!-- Begin: Added/Updated in 5.1.0 -->
+    <item name="MENU_SEND_BOOK_TO_BA" type="id"/>
+    <item name="TAG_BABELIO_WORK" type="id"></item>
+    
+    <string name="login">Login</string>
+    <string name="update">Update</string>
+    <string name="username_or_email">Username or email</string>
+    <string name="password">Password</string>
+    <string name="username_missing">Username missing</string>
+    <string name="password_missing">Password missing</string>
+    <string name="username_or_email_invalid">Your login information are invalid.</string>
+    <string name="username_or_email_update">Your login information are updated.</string>
+    <string name="username_or_email_saved">Your login information are saved.</string>
+    
+    
+    <string name="babelio">Babelio</string>
+    <string name="babelio_label">Babelio</string>
+    <string name="babelio_url">http://www.babelio.com</string>
+    
+    <string name="test_babelio">Test Babelio</string>
+    <string name="visit_babelio">Visit Babelio&#8230;</string>
+    <string name="edit_book_send_to_ba">Send to Babelio</string>
+    <string name="send_books_to_babelio">Send books to Babelio</string>
+    <string name="import_all_from_babelio">Import all from Babelio</string>
+    <string name="babelio_action_cannot_blah_blah">This action can not be completed until this application is authorized via the Babelio web site. Once you have authorized this application, please retry. \n\nDo you want to authorize it now?</string>
+    <string name="sync_with_babelio">Synchronize with Babelio</string>
+    <string name="searching_babelio">Searching Babelio</string>
+    <string name="babelio_auth_check">Babelio authorization check</string>
+    <string name="babelio_auth_failed">Babelio authorization failed</string>
+    <string name="babelio_auth_successful">Babelio authorization successful</string>
+    <string name="babelio_auth_error">Babelio authorization resulted in an error.</string>
+    <string name="babelio_access_error">There was a network problem while accessing Babelio. Please check if the Babelio web site it up, and if the problem persists please contact support</string>
+    <string name="send_all_to_babelio_result">%1$s books processed: %2$s sent successfully, %3$s with no ISBN and %4$s with ISBN but not found in Babelio</string>
+    <string name="send_book_to_babelio">Send book %1$s to Babelio</string>
+    
+    <string name="babelio_auth_blurb_part1">Babelio is a web site whose stated mission is "to help people find and share books they love". 
+    										They have an extensive database of books and reviews, and if you are a registered Babelio user, 
+    										BookCatalogue can export your books, shelves and reviews to goodreads and import your books, 
+    										shelves and reviews from Babelio. BookCatalogue is a stand-alone application and does not 
+    										require Babelio, but if you are interested you can register at:</string>
+    <string name="babelio_auth_blurb_part2">Once you are registered, or if you are already a Babelio user, you can authorize BookCatalogue 
+    										to access your Babelio data by entering your login information. Currently, Babelio don\'t have an interface
+    										permitting you to login you without your username and your password.</string>
+    <string name="babelio_auth_blurb_part2_warning">Warning ! Your login information will be save clearly on your phone !</string>
+    <string name="babelio_auth_blurb_part3">But remember&#8230;there is no need to do any of this: BookCatalogue works just fine without it!</string>
 
+
+    <!-- Extra text displayed on the babelio activity when a user HAS registered -->
+    <string name="babelio_auth_blurb_part4">It looks like you have already authorized this app. If you would like to
+    delete your login informationsfrom this phone, then you can do so by pressing the button below.
+    \n\nForgetting the credentials here will remove the Babelio option from the main application menu.</string>
+    
+    <string name="send_books_to_babelio_blurb">This will send your library to Babelio.
+    										\n\nYou can choose to send all of your books, or only the books you have updated 
+    										since they were last copied to or from goodreads (including all books that have 
+    										not been sent yet) or you can cancel the update.
+    										\n\nIf you have never sent any books then there is no
+    										difference between the first two options.</string>
+    <string name="explain_babelio_no_isbn">The selected book does not have an ISBN; it is not possible to automatically synchronize it with goodreads. 
+    									The simplest solution is to:
+    									\n\n(1) delete the book from BookCatalogue
+    									\n\n(2) add the book in Babelio manually via their web interface
+    									\n\n(3) Synchronize with Babelio
+    									\n\nThis will result in the book being recreated in BookCatalogue and the two will remain linked from that point onwards.</string>
+    <string name="explain_babelio_no_match">The ISBN of the selected book could not be found on Babelio. There are two possible causes for this: 
+    									either the data for the book is wrong (you should check the ISBN), or the book is not in Babelio. 
+    									\n\nIf you make any changes to the data in BookCatalogue, just press the \'Retry\' button and check to see if the 
+    									resulting background task succeeds. 
+    									\n\nIf the data looks correct and the book is still not found, then a book with that ISBN needs to be added to Babelio manually
+										via their web site. Once that is done, you can retry sending the book.</string>
+		
+    <string name="new_in_510">
+		<![CDATA[
+    		<p><b>New in 4.2</b>\n\n
+				* Add import, export and sync with Babelio\n\n
+			</p>
+		]]>
+    </string>
+    <!-- End: Added/Updated in 5.1.0 -->
+    
+    
+    <!-- End: Added/Updated in [Next Version] -->
+    
 </resources>

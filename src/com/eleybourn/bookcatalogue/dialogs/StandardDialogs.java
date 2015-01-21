@@ -42,10 +42,13 @@ import android.widget.TextView;
 
 import com.eleybourn.bookcatalogue.AdministrationLibraryThing;
 import com.eleybourn.bookcatalogue.Author;
+import com.eleybourn.bookcatalogue.BookCatalogueApp;
+import com.eleybourn.bookcatalogue.BookCataloguePreferences;
 import com.eleybourn.bookcatalogue.CatalogueDBAdapter;
 import com.eleybourn.bookcatalogue.LibraryThingManager;
 import com.eleybourn.bookcatalogue.R;
 import com.eleybourn.bookcatalogue.Series;
+import com.eleybourn.bookcatalogue.babelio.BabelioRegister;
 import com.eleybourn.bookcatalogue.compat.BookCatalogueActivity;
 import com.eleybourn.bookcatalogue.goodreads.GoodreadsRegister;
 import com.eleybourn.bookcatalogue.utils.Logger;
@@ -248,6 +251,41 @@ public class StandardDialogs {
 			public void onClick(DialogInterface dialog, int which) {
 				alertDialog.dismiss();
 				Intent i = new Intent(context, GoodreadsRegister.class);
+				context.startActivity(i);				
+			}
+		});
+
+		alertDialog.setButton(DialogInterface.BUTTON_NEGATIVE, context.getResources().getString(R.string.cancel), new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int which) {
+				alertDialog.dismiss();
+			}
+		}); 
+
+		alertDialog.show();
+		return 0;
+	}
+
+	/**
+	 * Display a dialog warning the user that babelio authentication is required; gives them
+	 * the options: 'request now', 'more info' or 'cancel'.
+	 */
+	public static int babelioAuthAlert(final FragmentActivity context) {
+		// Get the title		
+		final AlertDialog alertDialog = new AlertDialog.Builder(context).setTitle(R.string.authorize_access).setMessage(R.string.babelio_action_cannot_blah_blah).create();
+
+		alertDialog.setIcon(android.R.drawable.ic_menu_info_details);
+		alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, context.getResources().getString(R.string.ok), new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int which) {
+				alertDialog.dismiss();
+				BookCataloguePreferences prefs = BookCatalogueApp.getAppPreferences();
+				BabelioRegister.requestAuthorizationInBackground(context, prefs.getString("Babelio.AccessToken.Id", ""), prefs.getString("Babelio.AccessToken.Pass", ""));
+			}
+		});
+		
+		alertDialog.setButton(DialogInterface.BUTTON_NEUTRAL, context.getResources().getString(R.string.tell_me_more), new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int which) {
+				alertDialog.dismiss();
+				Intent i = new Intent(context, BabelioRegister.class);
 				context.startActivity(i);				
 			}
 		});

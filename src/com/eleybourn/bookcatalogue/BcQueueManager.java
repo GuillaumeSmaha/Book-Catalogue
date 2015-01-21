@@ -59,6 +59,10 @@ public class BcQueueManager extends QueueManager {
 	public static final long CAT_GOODREADS_IMPORT_ALL = 3;
 	public static final long CAT_GOODREADS_EXPORT_ALL = 4;
 	public static final long CAT_GOODREADS_EXPORT_ONE = 5;
+	public static final long CAT_BABELIO_AUTH = 6;
+	public static final long CAT_BABELIO_IMPORT_ALL = 7;
+	public static final long CAT_BABELIO_EXPORT_ALL = 8;
+	public static final long CAT_BABELIO_EXPORT_ONE = 9;
 	
 //	/**
 //	 * Create the queue we need, if they do not already exist.

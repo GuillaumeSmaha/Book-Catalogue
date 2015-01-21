@@ -37,6 +37,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 
+import com.eleybourn.bookcatalogue.babelio.BabelioExportFailuresActivity;
 import com.eleybourn.bookcatalogue.goodreads.GoodreadsExportFailuresActivity;
 import com.eleybourn.bookcatalogue.utils.HintManager;
 import com.eleybourn.bookcatalogue.utils.Logger;
@@ -133,6 +134,7 @@ public class TaskListActivity extends BindableItemListActivity {
 
 	private void doShowTaskEvents(long taskId) {
 		GoodreadsExportFailuresActivity.start(this, taskId);
+		BabelioExportFailuresActivity.start(this, taskId);
 	}
 	
 	/**

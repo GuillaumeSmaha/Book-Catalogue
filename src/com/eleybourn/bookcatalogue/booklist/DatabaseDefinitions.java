@@ -138,6 +138,8 @@ public class DatabaseDefinitions {
 	public static final DomainDefinition DOM_TITLE = new DomainDefinition(KEY_TITLE, "text", "", "");
 	public static final DomainDefinition DOM_TITLE_LETTER = new DomainDefinition("title_letter", "text", "", "");
 	public static final DomainDefinition DOM_VISIBLE = new DomainDefinition("visible", "int", "default 0", "");
+	public static final DomainDefinition DOM_BABELIO_BOOK_ID = new DomainDefinition("babelio_book_id", "int", "", "");
+	public static final DomainDefinition DOM_LAST_BABELIO_SYNC_DATE = new DomainDefinition("last_babelio_sync_date", "date", "default '0000-00-00'", "");
 
 	/** FTS Table */
 	public static final TableDefinition TBL_BOOKS_FTS = new TableDefinition("books_fts", DOM_AUTHOR_NAME, DOM_TITLE, 
@@ -249,6 +251,5 @@ public class DatabaseDefinitions {
 		.setAlias(ALIAS_BOOK_LIST_STYLES)
 		.addIndex("id", true, DOM_ID)
 		;
-		
-		
+
 }

@@ -59,6 +59,8 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.eleybourn.bookcatalogue.babelio.BabelioManager;
+import com.eleybourn.bookcatalogue.babelio.BabelioSendOneBookTask;
 import com.eleybourn.bookcatalogue.booklist.BooklistPreferencesActivity;
 import com.eleybourn.bookcatalogue.dialogs.StandardDialogs;
 import com.eleybourn.bookcatalogue.goodreads.GoodreadsManager;
@@ -90,6 +92,7 @@ public class BookCatalogueClassic extends ExpandableListActivity {
 	private static final int EDIT_AUTHOR_ID = MenuHandler.FIRST + 16;
 	private static final int EDIT_SERIES_ID = MenuHandler.FIRST + 17;
 	private static final int EDIT_BOOK_SEND_TO_GR = MenuHandler.FIRST + 19;
+	private static final int EDIT_BOOK_SEND_TO_BA = MenuHandler.FIRST + 20;
 	
 	private String bookshelf = "";
 	private ArrayAdapter<String> spinnerAdapter;
@@ -1444,6 +1447,9 @@ public class BookCatalogueClassic extends ExpandableListActivity {
 				// Send book to goodreads
 				MenuItem edit_book_send_to_gr = menu.add(0, EDIT_BOOK_SEND_TO_GR, 0, R.string.edit_book_send_to_gr);
 				edit_book_send_to_gr.setIcon(R.drawable.ic_menu_cc);
+				// Send book to babelio
+				MenuItem edit_book_send_to_ba = menu.add(0, EDIT_BOOK_SEND_TO_BA, 0, R.string.edit_book_send_to_ba);
+				edit_book_send_to_ba.setIcon(R.drawable.ic_menu_cc);
 			} else if (ExpandableListView.getPackedPositionType(info.packedPosition) == ExpandableListView.PACKED_POSITION_TYPE_GROUP) {
 				switch(sort) {
 				case SORT_AUTHOR:
@@ -1508,9 +1514,24 @@ public class BookCatalogueClassic extends ExpandableListActivity {
 				}
 			}
 			// get a QueueManager and queue the task.
-			QueueManager qm = BookCatalogueApp.getQueueManager();
-			SendOneBookTask task = new SendOneBookTask(info.id);
-			qm.enqueueTask(task, BcQueueManager.QUEUE_MAIN, 0);
+			QueueManager qm_gr = BookCatalogueApp.getQueueManager();
+			SendOneBookTask task_gr = new SendOneBookTask(info.id);
+			qm_gr.enqueueTask(task_gr, BcQueueManager.QUEUE_MAIN, 0);
+			return true;
+
+		case EDIT_BOOK_SEND_TO_BA:
+			// Get a GoodreadsManager and make sure we are authorized.
+			BabelioManager baMgr = new BabelioManager(true);
+			try {
+				baMgr.hasValidCredentials();
+			} catch (com.eleybourn.bookcatalogue.babelio.BabelioManager.Exceptions.NetworkException e) {
+				
+				Toast.makeText(this, e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
+			}
+			// get a QueueManager and queue the task.
+			QueueManager qm_ba = BookCatalogueApp.getQueueManager();
+			BabelioSendOneBookTask task_ba = new BabelioSendOneBookTask(info.id);
+			qm_ba.enqueueTask(task_ba, BcQueueManager.QUEUE_MAIN, 0);
 			return true;
 
 		case EDIT_SERIES_ID:

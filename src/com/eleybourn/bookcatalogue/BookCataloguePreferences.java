@@ -91,11 +91,31 @@ public class BookCataloguePreferences {
 		}
 		return result;
 	}
+	/** Get a named string preference */
+	public long getLong(String name, long defaultValue) {
+		long result;
+		try {
+			result = m_prefs.getLong(name, defaultValue);
+		} catch (Exception e) {
+			result = defaultValue;
+		}
+		return result;
+	}
 	/** Set a named string preference */
 	public void setInt(String name, int value) {
 		Editor ed = this.edit();
 		try {
 			ed.putInt(name, value);
+		} finally {
+			ed.commit();
+		}
+	}
+
+	/** Set a named string preference */
+	public void setLong(String name, long value) {
+		Editor ed = this.edit();
+		try {
+			ed.putLong(name, value);
 		} finally {
 			ed.commit();
 		}

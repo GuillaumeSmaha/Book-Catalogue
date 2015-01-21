@@ -95,6 +95,12 @@
             android:drawableLeft="@drawable/ic_menu_gallery"
             android:text="@string/update_fields" />
 
+        <!-- GOODREADS -->
+
+        <com.eleybourn.bookcatalogue.widgets.CapitalizedTextView
+            style="@style/prefs_header"
+            android:text="@string/goodreads" />
+
         <TextView
             android:id="@+id/sync_with_goodreads_label"
             style="@style/prefs_item"
@@ -113,20 +119,51 @@
             android:drawableLeft="@drawable/ic_menu_archive"
             android:text="@string/send_books_to_goodreads" />
 
+        <!-- BABELIO -->
+
+        <com.eleybourn.bookcatalogue.widgets.CapitalizedTextView
+            style="@style/prefs_header"
+            android:text="@string/babelio" />
+
+        <TextView
+            android:id="@+id/sync_with_babelio_label"
+            style="@style/prefs_item"
+            android:drawableLeft="@drawable/ic_menu_refresh"
+            android:text="@string/sync_with_babelio" />
+
+        <TextView
+            android:id="@+id/import_all_from_babelio_label"
+            style="@style/prefs_item"
+            android:drawableLeft="@drawable/ic_menu_upload"
+            android:text="@string/import_all_from_babelio" />
+
+        <TextView
+            android:id="@+id/send_books_to_babelio_label"
+            style="@style/prefs_item"
+            android:drawableLeft="@drawable/ic_menu_archive"
+            android:text="@string/send_books_to_babelio" />
+
         <!-- CREDENTIALS HEADING -->
 
         <com.eleybourn.bookcatalogue.widgets.CapitalizedTextView
             style="@style/prefs_header"
             android:text="@string/credentials" />
 
-        <!-- GOODREADS CREDENTIALS -->
-
+        	<!-- GOODREADS CREDENTIALS -->
         <TextView
             android:id="@+id/goodreads_auth"
             style="@style/prefs_item"
             android:drawableLeft="@drawable/ic_menu_gr_logo"
             android:text="@string/goodreads" />
 
+        	<!-- BABELIO CREDENTIALS -->
+        <TextView
+            android:id="@+id/babelio_auth"
+            style="@style/prefs_item"
+            android:drawableLeft="@drawable/ic_menu_ba_logo"
+            android:text="@string/babelio" />
+
+        	<!-- LIBRARYTHING CREDENTIALS -->
         <TextView
             android:id="@+id/librarything_auth"
             style="@style/prefs_item"

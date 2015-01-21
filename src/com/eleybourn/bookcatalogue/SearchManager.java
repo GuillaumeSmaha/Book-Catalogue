@@ -52,13 +52,18 @@ public class SearchManager implements TaskManagerListener {
 	public static final int SEARCH_LIBRARY_THING = 4;
 	/** Flag indicating a search source to use */
 	public static final int SEARCH_GOODREADS = 8;
+	/** Flag indicating a search source to use */
+	public static final int SEARCH_BABELIO = 16;
 	/** Mask including all search sources */
-	public static final int SEARCH_ALL = SEARCH_GOOGLE | SEARCH_AMAZON | SEARCH_LIBRARY_THING | SEARCH_GOODREADS;
+	//public static final int SEARCH_ALL = SEARCH_GOOGLE | SEARCH_AMAZON | SEARCH_LIBRARY_THING | SEARCH_GOODREADS | SEARCH_BABELIO;
+	public static final int SEARCH_ALL = SEARCH_BABELIO;
 	
 	// ENHANCE: Allow user to change the default search data priority
-	public static final int[] mDefaultSearchOrder = new int[] {SEARCH_AMAZON, SEARCH_GOODREADS, SEARCH_GOOGLE, SEARCH_LIBRARY_THING};
+	//public static final int[] mDefaultSearchOrder = new int[] {SEARCH_AMAZON, SEARCH_GOODREADS, SEARCH_BABELIO, SEARCH_GOOGLE, SEARCH_LIBRARY_THING};
+	public static final int[] mDefaultSearchOrder = new int[] {SEARCH_BABELIO};
 	// ENHANCE: Allow user to change the default search data priority
-	public static final int[] mDefaultReliabilityOrder = new int[] {SEARCH_GOODREADS, SEARCH_AMAZON, SEARCH_GOOGLE, SEARCH_LIBRARY_THING};
+	//public static final int[] mDefaultReliabilityOrder = new int[] {SEARCH_GOODREADS, SEARCH_BABELIO, SEARCH_AMAZON, SEARCH_GOOGLE, SEARCH_LIBRARY_THING};
+	public static final int[] mDefaultReliabilityOrder = new int[] {SEARCH_BABELIO};
 
 	/** Flags applicable to *current* search */
 	int mSearchFlags;
@@ -211,6 +216,18 @@ public class SearchManager implements TaskManagerListener {
 	private boolean startGoodreads(){
 		if (!mCancelledFlg) {
 			startOne( new SearchGoodreadsThread(mTaskManager, mAuthor, mTitle, mIsbn, mFetchThumbnail));		
+			return true;
+		} else {
+			return false;			
+		}
+	}
+
+	/**
+	 * Start an Babelio search
+	 */
+	private boolean startBabelio(){
+		if (!mCancelledFlg) {
+			startOne( new SearchBabelioThread(mTaskManager, mAuthor, mTitle, mIsbn, mFetchThumbnail));		
 			return true;
 		} else {
 			return false;			
@@ -488,7 +505,7 @@ public class SearchManager implements TaskManagerListener {
 	/**
 	 * When running in single-stream mode, start the next thread that has no data.
 	 * While Google is reputedly most likely to succeed, it also produces garbage a lot. 
-	 * So we search Amazon, Goodreads, Google and LT last as it REQUIRES an ISBN.
+	 * So we search Amazon, Goodreads, Babelio, Google and LT last as it REQUIRES an ISBN.
 	 */
 	private boolean startNext() {
 		// Loop though in 'search-priority' order
@@ -540,6 +557,8 @@ public class SearchManager implements TaskManagerListener {
 			return startLibraryThing();
 		case SEARCH_GOODREADS:
 			return startGoodreads();
+		case SEARCH_BABELIO:
+			return startBabelio();
 		default:
 			throw new RuntimeException("Unexpected search source: " + source);				
 		}

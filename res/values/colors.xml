@@ -4,4 +4,5 @@
     <color name="background_thumb">#80808080</color>
     <color name="link_blue">#006699</color>
     <color name="link_donate">#11D2EF</color>
+    <color name="warning">#FF0000</color>
 </resources>

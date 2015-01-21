@@ -64,6 +64,8 @@ import android.widget.Toast;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 import com.eleybourn.bookcatalogue.BooksMultitypeListHandler.BooklistChangeListener;
+import com.eleybourn.bookcatalogue.babelio.BabelioManager;
+import com.eleybourn.bookcatalogue.babelio.BabelioUtils;
 import com.eleybourn.bookcatalogue.booklist.BooklistBuilder;
 import com.eleybourn.bookcatalogue.booklist.BooklistBuilder.BookRowInfo;
 import com.eleybourn.bookcatalogue.booklist.BooklistGroup.RowKinds;
@@ -1007,6 +1009,7 @@ public class BooksOnBookshelf extends BookCatalogueActivity implements BooklistC
 	private static final int MNU_COLLAPSE = MenuHandler.FIRST+3; 
 	private static final int MNU_EDIT_STYLE = MenuHandler.FIRST+4; 
 	private static final int MNU_GOODREADS = MenuHandler.FIRST+5; 
+	private static final int MNU_BABELIO = MenuHandler.FIRST+6; 
 	
 	/**
 	 * Run each time the menu button is pressed. This will setup the options menu
@@ -1034,6 +1037,11 @@ public class BooksOnBookshelf extends BookCatalogueActivity implements BooklistC
 		final boolean showGr = GoodreadsManager.hasCredentials();
 		if (showGr) {
 			mMenuHandler.addItem(menu, MNU_GOODREADS, R.string.goodreads, R.drawable.ic_menu_gr_logo);
+		}
+
+		final boolean showBa = BabelioManager.hasCredentials();
+		if (showBa) {
+			mMenuHandler.addItem(menu, MNU_BABELIO, R.string.babelio, R.drawable.ic_menu_ba_logo);
 		}
 
 		mMenuHandler.addCreateHelpAndAdminItems(menu);
@@ -1089,6 +1097,11 @@ public class BooksOnBookshelf extends BookCatalogueActivity implements BooklistC
 			case MNU_GOODREADS:
 			{
 				GoodreadsUtils.showGoodreadsOptions(this);
+				break;
+			}
+			case MNU_BABELIO:
+			{
+				BabelioUtils.showBabelioOptions(this);
 				break;
 			}
 			/*

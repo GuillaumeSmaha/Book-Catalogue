@@ -1,5 +1,5 @@
 /*
-* @copyright 2010 Evan Leybourn
+ * @copyright 2010 Evan Leybourn
  * @license GNU General Public License
  * 
  * This file is part of Book Catalogue.
@@ -50,6 +50,8 @@ import static com.eleybourn.bookcatalogue.booklist.DatabaseDefinitions.TBL_BOOK_
 import static com.eleybourn.bookcatalogue.booklist.DatabaseDefinitions.TBL_BOOK_SERIES;
 import static com.eleybourn.bookcatalogue.booklist.DatabaseDefinitions.TBL_BOOK_BOOKSHELF;
 import static com.eleybourn.bookcatalogue.booklist.DatabaseDefinitions.TBL_SERIES;
+import static com.eleybourn.bookcatalogue.booklist.DatabaseDefinitions.DOM_BABELIO_BOOK_ID;
+import static com.eleybourn.bookcatalogue.booklist.DatabaseDefinitions.DOM_LAST_BABELIO_SYNC_DATE;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
@@ -229,7 +231,7 @@ public class CatalogueDBAdapter {
 		" (" + KEY_BOOKSHELF + ") VALUES ('Default')";
 
 	// Renamed to the LAST version in which it was used
-	private static final String DATABASE_CREATE_BOOKS_81 =
+	private static final String DATABASE_CREATE_BOOKS =
 			"create table " + DB_TB_BOOKS + 
 			" (_id integer primary key autoincrement, " +
 			/* KEY_AUTHOR + " integer not null REFERENCES " + DB_TB_AUTHORS + ", " + */
@@ -252,15 +254,18 @@ public class CatalogueDBAdapter {
 			KEY_SIGNED + " boolean not null default 0, " +
 			KEY_DESCRIPTION + " text, " +
 			KEY_GENRE + " text, " +
+			DOM_LANGUAGE.getDefinition(true) + ", " +
 			KEY_DATE_ADDED + " datetime default current_timestamp, " +
 			DOM_GOODREADS_BOOK_ID.getDefinition(true) + ", " +
 			DOM_LAST_GOODREADS_SYNC_DATE.getDefinition(true) + ", " +
 			DOM_BOOK_UUID.getDefinition(true) + ", " +
-			DOM_LAST_UPDATE_DATE.getDefinition(true) +
-			")";
-
+			DOM_LAST_UPDATE_DATE.getDefinition(true) + ", " +
+			DOM_BABELIO_BOOK_ID.getDefinition(true) + ", " + // Added in version 83
+			DOM_LAST_BABELIO_SYNC_DATE.getDefinition(true) + // Added in version 83
+	")";
+	
 	// NOTE: **NEVER** change this. Rename it, and create a new one. Unless you know what you are doing.
-	private static final String DATABASE_CREATE_BOOKS =
+	private static final String DATABASE_CREATE_BOOKS_82 =
 			"create table " + DB_TB_BOOKS + 
 			" (_id integer primary key autoincrement, " +
 			/* KEY_AUTHOR + " integer not null REFERENCES " + DB_TB_AUTHORS + ", " + */
@@ -289,7 +294,39 @@ public class CatalogueDBAdapter {
 			DOM_LAST_GOODREADS_SYNC_DATE.getDefinition(true) + ", " +
 			DOM_BOOK_UUID.getDefinition(true) + ", " +
 			DOM_LAST_UPDATE_DATE.getDefinition(true) +
-			")";
+	")";
+
+	// NOTE: **NEVER** change this. Rename it, and create a new one. Unless you know what you are doing.
+	private static final String DATABASE_CREATE_BOOKS_81 =
+			"create table " + DB_TB_BOOKS + 
+			" (_id integer primary key autoincrement, " +
+			/* KEY_AUTHOR + " integer not null REFERENCES " + DB_TB_AUTHORS + ", " + */
+			KEY_TITLE + " text not null, " +
+			KEY_ISBN + " text, " +
+			KEY_PUBLISHER + " text, " +
+			KEY_DATE_PUBLISHED + " date, " +
+			KEY_RATING + " float not null default 0, " +
+			KEY_READ + " boolean not null default 0, " +
+			/* KEY_SERIES + " text, " + */
+			KEY_PAGES + " int, " +
+			/* KEY_SERIES_NUM + " text, " + */
+			KEY_NOTES + " text, " +
+			KEY_LIST_PRICE + " text, " +
+			KEY_ANTHOLOGY_MASK + " int not null default " + ANTHOLOGY_NO + ", " + 
+			KEY_LOCATION + " text, " +
+			KEY_READ_START + " date, " +
+			KEY_READ_END + " date, " +
+			KEY_FORMAT + " text, " +
+			KEY_SIGNED + " boolean not null default 0, " +
+			KEY_DESCRIPTION + " text, " +
+			KEY_GENRE + " text, " +
+			KEY_DATE_ADDED + " datetime default current_timestamp, " +
+			DOM_GOODREADS_BOOK_ID.getDefinition(true) + ", " +
+			DOM_LAST_GOODREADS_SYNC_DATE.getDefinition(true) + ", " +
+			DOM_BOOK_UUID.getDefinition(true) + ", " +
+			DOM_LAST_UPDATE_DATE.getDefinition(true) +
+	")";
+
 	// ^^^^ NOTE: **NEVER** change this. Rename it, and create a new one. Unless you know what you are doing.
 	
 	//private static final String DATABASE_CREATE_BOOKS_70 =
@@ -491,6 +528,7 @@ public class CatalogueDBAdapter {
 		"CREATE INDEX IF NOT EXISTS books_publisher ON "+DB_TB_BOOKS+" ("+KEY_PUBLISHER+");",
 		"CREATE UNIQUE INDEX IF NOT EXISTS books_uuid ON "+DB_TB_BOOKS+" ("+DOM_BOOK_UUID+");",
 		"CREATE INDEX IF NOT EXISTS books_gr_book ON "+DB_TB_BOOKS+" ("+DOM_GOODREADS_BOOK_ID.name+");",
+		"CREATE INDEX IF NOT EXISTS books_ba_book ON "+DB_TB_BOOKS+" ("+DOM_BABELIO_BOOK_ID.name+");",
 		"CREATE INDEX IF NOT EXISTS anthology_book ON "+DB_TB_ANTHOLOGY+" ("+KEY_BOOK+");",
 		"CREATE INDEX IF NOT EXISTS anthology_author ON "+DB_TB_ANTHOLOGY+" ("+KEY_AUTHOR_ID+");",
 		"CREATE INDEX IF NOT EXISTS anthology_title ON "+DB_TB_ANTHOLOGY+" ("+KEY_TITLE+");",
@@ -590,6 +628,8 @@ public class CatalogueDBAdapter {
 			alias + "." + KEY_DATE_ADDED  + " as " + KEY_DATE_ADDED + ", " +
 			alias + "." + DOM_GOODREADS_BOOK_ID  + " as " + DOM_GOODREADS_BOOK_ID + ", " +
 			alias + "." + DOM_LAST_GOODREADS_SYNC_DATE  + " as " + DOM_LAST_GOODREADS_SYNC_DATE + ", " +
+			alias + "." + DOM_BABELIO_BOOK_ID  + " as " + DOM_BABELIO_BOOK_ID + ", " +
+			alias + "." + DOM_LAST_BABELIO_SYNC_DATE  + " as " + DOM_LAST_BABELIO_SYNC_DATE + ", " +
 			alias + "." + DOM_LAST_UPDATE_DATE  + " as " + DOM_LAST_UPDATE_DATE + ", " +
 			alias + "." + DOM_BOOK_UUID  + " as " + DOM_BOOK_UUID;
 		}
@@ -604,7 +644,7 @@ public class CatalogueDBAdapter {
 //						+ " LEFT OUTER JOIN " + DB_TB_SERIES + " s ON (s." + KEY_ROWID + "=w." + KEY_SERIES_ID + ") ";
 
 	//TODO: Update database version RELEASE: Update database version
-	public static final int DATABASE_VERSION = 82;
+	public static final int DATABASE_VERSION = 83;
 
 	private TableInfo mBooksInfo = null;
 
@@ -686,7 +726,9 @@ public class CatalogueDBAdapter {
 						"	Begin \n" +
 						"		Update books Set \n" +
 						"		    goodreads_book_id = 0,\n" +
-						"		    last_goodreads_sync_date = ''\n" +
+						"		    last_goodreads_sync_date = '',\n" +
+						"		    babelio_book_id = 0,\n" +
+						"		    last_babelio_sync_date = ''\n" +
 						"		Where\n" +
 						"			" + KEY_ROWID + " = new." + KEY_ROWID + ";\n" +
 						"	End";
@@ -1633,6 +1675,10 @@ public class CatalogueDBAdapter {
 				db.execSQL("DROP TABLE " + tempName);
 			}
 			if (curVersion == 81) {
+				curVersion++;
+				recreateAndReloadTable(sdb, DB_TB_BOOKS, DATABASE_CREATE_BOOKS_82);
+			}
+			if (curVersion == 82) {
 				curVersion++;
 				recreateAndReloadTable(sdb, DB_TB_BOOKS, DATABASE_CREATE_BOOKS);
 			}
@@ -2986,6 +3032,21 @@ public class CatalogueDBAdapter {
 	 */
 	public BooksCursor fetchBooksByGoodreadsBookId(long grId) throws SQLException {
 		String where = TBL_BOOKS.dot(DOM_GOODREADS_BOOK_ID) + "=" + grId;
+		return fetchAllBooks("", "", "", where, "", "", "");
+	}
+	
+	/**
+	 * Return a book (Cursor) that matches the given Babelio book Id.
+	 * Note: MAYE RETURN MORE THAN ONE BOOK
+	 * 
+	 * @param baId Babelio id of book(s) to retrieve
+	 *
+	 * @return Cursor positioned to matching book, if found
+	 * 
+	 * @throws SQLException if note could not be found/retrieved
+	 */
+	public BooksCursor fetchBooksByBabelioBookId(long baId) throws SQLException {
+		String where = TBL_BOOKS.dot(DOM_BABELIO_BOOK_ID) + "=" + baId;
 		return fetchAllBooks("", "", "", where, "", "", "");
 	}
 	
@@ -5002,7 +5063,105 @@ public class CatalogueDBAdapter {
 /**************************************************************************************/
 	
 	
+
 	
+/***************************************************************************************
+ * Babelio support
+ **************************************************************************************/
+
+	/**
+	 * Query to get all book IDs and ISBN for sending to babelio.
+	 */
+	public BooksCursor getAllBooksForBabelioCursor(long startId, boolean updatesOnly) {
+		//if (m_allBooksForBabelioStmt == null) {
+		//	m_allBooksForBabelioStmt = compileStatement("Select isbn, " + KEY_BOOK + " from " + DB_TB_BOOKS + " Order by " + KEY_BOOK);
+		//}
+		String sql = "Select " + KEY_ISBN + ", " + KEY_ROWID + ", " + DOM_BABELIO_BOOK_ID + 
+				", " + KEY_NOTES + ", " + KEY_READ + ", " + KEY_READ_END + ", " + KEY_RATING + 
+				" from " + DB_TB_BOOKS + " Where " + KEY_ROWID + " > " + startId;
+		if (updatesOnly) {
+			sql += " and " + DOM_LAST_UPDATE_DATE + " > " + DOM_LAST_BABELIO_SYNC_DATE;
+		}
+		sql += " Order by " + KEY_ROWID;
+
+		BooksCursor cursor = fetchBooks(sql, EMPTY_STRNG_ARRAY);
+		return cursor;
+	}
+
+	/**
+	 * Query to get a specific book ISBN from the ID for sending to babelio.
+	 */
+	public BooksCursor getBookForBabelioCursor(long bookId) {
+		String sql = "Select " + KEY_ROWID + ", " + KEY_ISBN + ", " + DOM_BABELIO_BOOK_ID + 
+				", " + KEY_NOTES + ", " + KEY_READ + ", " + KEY_READ_END + ", " + KEY_RATING + 
+				" from " + DB_TB_BOOKS + " Where " + KEY_ROWID + " = " + bookId + " Order by " + KEY_ROWID;
+		BooksCursor cursor = fetchBooks(sql, EMPTY_STRNG_ARRAY);
+		return cursor;
+	}
+
+	/**
+	 * Query to get a all bookshelves for a book, for sending to babelio.
+	 */
+	public Cursor getAllBookBookshelvesForBabelioCursor(long book) {
+		String sql = "Select s." + KEY_BOOKSHELF + " from " + DB_TB_BOOKSHELF + " s"
+				 + " Join " + DB_TB_BOOK_BOOKSHELF_WEAK + " bbs On bbs." + KEY_BOOKSHELF + " = s." + KEY_ROWID
+				 + " and bbs." + KEY_BOOK + " = " + book + " Order by s." + KEY_BOOKSHELF;
+		Cursor cursor = mDb.rawQuery(sql, EMPTY_STRING_ARRAY);
+		return cursor;
+	}
+
+	/** Support statement for setBabelioBookId() */
+	private SynchronizedStatement mSetBabelioBookIdStmt = null;
+	/**
+	 * Set the babelio book id for this passed book. This is used by other babelio-related 
+	 * functions.
+	 * 
+	 * @param bookId			Book to update
+	 * @param babelioBookId	GR book id
+	 */
+	public void setBabelioBookId(long bookId, long babelioBookId) {
+		if (mSetBabelioBookIdStmt == null ) {
+			String sql = "Update " + TBL_BOOKS + " Set " + DOM_BABELIO_BOOK_ID + " = ? Where " + DOM_ID + " = ?";
+			mSetBabelioBookIdStmt = mStatements.add("mSetBabelioBookIdStmt", sql);
+		}
+		mSetBabelioBookIdStmt.bindLong(1, babelioBookId);
+		mSetBabelioBookIdStmt.bindLong(2, bookId);
+		mSetBabelioBookIdStmt.execute();
+	}
+
+	/** Support statement for setBabelioSyncDate() */
+	private SynchronizedStatement mSetBabelioSyncDateStmt = null;
+	/** 
+	 * Set the babelio sync date to the current time
+	 * 
+	 * @param bookId
+	 */
+	public void setBabelioSyncDate(long bookId) {
+		if (mSetBabelioSyncDateStmt == null) {
+			String sql = "Update " + DB_TB_BOOKS + " Set " + DOM_LAST_BABELIO_SYNC_DATE + " = current_timestamp Where " + KEY_ROWID + " = ?";
+			mSetBabelioSyncDateStmt = mStatements.add("mSetBabelioSyncDateStmt", sql);			
+		}
+		mSetBabelioSyncDateStmt.bindLong(1, bookId);
+		mSetBabelioSyncDateStmt.execute();		
+	}
+	
+//	/** Support statement for getBabelioSyncDate() */
+//	private SynchronizedStatement mGetBabelioSyncDateStmt = null;
+//	/** 
+//	 * Set the babelio sync date to the current time
+//	 * 
+//	 * @param bookId
+//	 */
+//	public String getBabelioSyncDate(long bookId) {
+//		if (mGetBabelioSyncDateStmt == null) {
+//			String sql = "Select " + DOM_LAST_BABELIO_SYNC_DATE + " From " + DB_TB_BOOKS + " Where " + KEY_ROWID + " = ?";
+//			mGetBabelioSyncDateStmt = mStatements.add("mGetBabelioSyncDateStmt", sql);			
+//		}
+//		mGetBabelioSyncDateStmt.bindLong(1, bookId);
+//		return mGetBabelioSyncDateStmt.simpleQueryForString();			
+//	}
+	
+/**************************************************************************************/
 	
 	
     /*

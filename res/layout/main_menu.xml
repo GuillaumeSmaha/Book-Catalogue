@@ -64,6 +64,12 @@
                 android:text="@string/goodreads" />
 
             <TextView
+                android:id="@+id/babelio_label"
+                style="@style/main_menu_item"
+                android:drawableLeft="@drawable/ic_menu_ba_logo"
+                android:text="@string/babelio" />
+
+            <TextView
                 android:id="@+id/about_label"
                 style="@style/main_menu_item"
                 android:drawableLeft="@drawable/ic_menu_info_details"

@@ -175,6 +175,7 @@
     <string name="unknown_error">Une erreur inconnue s\'est produite</string>
     <string name="notes">Notes</string>
     <string name="loaned_to">Ce livre a été prêté à :</string>
+    <string name="has_been_loaned">Ce livre a été prêté</string>
     <string name="nobody">Personne</string>
     <string name="loan_to">Prêter le livre à :</string>
     <string name="returned">Rendu</string>
@@ -721,7 +722,7 @@
     <string name="goodreads_auth_blurb_part4">Cette application est déjà autorisée auprès de Goodreads. Si vous souhaitez effacer
 		vos données de connection, vos pouvez cliquer sur le bouton ci-dessous. Mais, il est aussi
 		important  d\'enlever cette autoristation sur le site de Goodreads également.
-		\n\nSupprimer les données de connection enlevera l'option Goodreads du menu principal.</string>
+		\n\nSupprimer les données de connection enlevera l\'option Goodreads du menu principal.</string>
     <!-- Progress dialog message displayed when doing a long network operation to a web site -->
     <string name="connecting_to_web_site">Connection au site &#8230;</string>
     <!-- Admin option to import -->
@@ -760,8 +761,6 @@
     <string name="show_book_count">Montrer le nombre de livres</string>
     <string name="show_first_level_and_book_count">Montrer l\'entête de 1er niveau et le nombre de livres</string>
     <string name="show_all_summary_details">Montrer tous les détails</string>
-    <!-- Displayed when an archive operation fails -->
-    <string name="import_failed">Restauration échouée</string>
     <!-- Displayed when any write operation to the sd card fails -->
     <string name="please_check_sd_writable">Merci de vérifier que votre carte SD est en mode \'ecriture\' et dispose d\'un espace suffisant</string>
     <!-- Displayed when any write operation to the sd card fails -->
@@ -851,5 +850,84 @@
 		]]>
     </string>
     <!-- End: Added/Updated in 5.0.8 -->
+    
+    <!-- Begin: Added/Updated in 5.1.0 -->
+    
+    <string name="login">Se connecter</string>
+    <string name="update">Mettre à jour</string>
+    <string name="username_or_email">Identifiant ou email</string>
+    <string name="password">Mot de passe</string>
+    <string name="username_missing">Identifiant manquant</string>
+    <string name="password_missing">Mot de passe manquant</string>
+    <string name="username_or_email_invalid">Identifiant ou email invalide</string>
+    <string name="username_or_email_update">Vos informations de connection ont été mise à jour.</string>
+    <string name="username_or_email_saved">Vos informations de connection ont été enregistré.</string>
+    
+    
+    <string name="babelio">Babelio</string>
+    <string name="babelio_label">Babelio</string>
+    <string name="babelio_url">http://www.babelio.com</string>
+    
+    <string name="test_babelio">Tester Babelio</string>
+    <string name="visit_babelio">Visiter Babelio&#8230;</string>
+    <string name="edit_book_send_to_ba">Envoyer à Babelio</string>
+    <string name="send_books_to_babelio">Envoyer les livres à Babelio</string>
+    <string name="import_all_from_babelio">Tout importer depuis Babelio</string>
+    <string name="babelio_action_cannot_blah_blah">Cette action ne peut être menée tant que cette application n\'est pas autorisée par Babelio. Merci de ré-essayer après autorisation. \n\nVoulez-vous l\'autoriser maintenent ?</string>
+    <string name="sync_with_babelio">Synchroniser avec Babelio</string>
+    <string name="searching_babelio">Recherche en cours sur Babelio</string>
+    <string name="babelio_auth_check">Autorisation Babelio en cours</string>
+    <string name="babelio_auth_failed">Échec de l\'autorisation Babelio</string>
+    <string name="babelio_auth_successful">Autorisation Babelio accordée</string>
+    <string name="babelio_auth_error">Autorisation Babelio en erreur.</string>
+    <string name="babelio_access_error">Problème réseau lors de l\'accès à Babelio : vérifiez que le site Babelio est disponible et si le problème persiste, prenez contact avec le support.</string>
+    <string name="send_all_to_babelio_result">%1$s livres traités : %2$s envoyés avec succès, %3$s sans ISBN et %4$s avec ISBN mais non trouvés sur Babelio</string>
+    <string name="send_book_to_babelio">Envoyer le livre %1$s à Babelio</string>
+    
+    <string name="babelio_auth_blurb_part1">Babelio est un site français qui s\'est donné pour mission «d\'aider les gens à trouver et à partager les livres qu\'ils aiment». 
+		Ils disposent d\'une large base de données de livres et de critiques, et si vous êtes un utilisateur enregistré sur Babelio, 
+		BookCatalogue peut y exporter ou en importer vos livres, vos bibliothèques et critiques. 
+		BookCatalogue est une application indépendante et ne nécessite pas Babelio, 
+		mais si vous êtes interessé vous pouvez vous enregistrer ici :</string>
+    <string name="babelio_auth_blurb_part2">Une fois enregistré ou si vous êtes déjà utilisateur de Babelio, vous pouvez autoriser BookCatalogue 
+		à accéder à vos données Babelio en saisissant vos informations de connexion.
+		Actuellement, Babelio ne possède pas d\'interface permettant de vous authentifier sans utiliser votre identifiant et votre mot de passe.</string>
+    <string name="babelio_auth_blurb_part2_warning">Attention ! Vos informations de connection seront sauvegardés en clair sur votre téléphone !</string>
+	<string name="babelio_auth_blurb_part3">Mais rappelez-vous&#8230; il n\'est pas nécessaire de faire tout cela : BookCatalogue fonctionne très bien sans ça !</string>
 
+    <!-- Extra text displayed on the Babelio activity when a user HAS registered -->
+    <string name="babelio_auth_blurb_part4">Vos informations de connection sont déjà enregistré. Si vous souhaitez effacer
+		vos données de connection, vos pouvez cliquer sur le bouton ci-dessous.
+		\n\nSupprimer les données de connection enlevera l\'option Babelio du menu principal.</string>
+		
+    <string name="send_books_to_babelio_blurb">Vous êtes sur le point d\'envoyer votre bibliothèque à Babelio.
+		\n\nVous pouvez envoyer tous vos livres ou uniquement ceux que vous avez mis à jour  
+		depuis qu\'ils ont été copiés depuis ou vers Babelio (y compris 
+		ceux qui n\'ont pas encore été envoyés) ou vous pouvez annuler cette mise à jour.
+		\n\nSi vous n\'avez encore jamais envoyé aucun livre, il n\'y a alors 
+		aucune différence entre les deux options.</string>
+		
+    <string name="explain_babelio_no_isbn">Les livres sélectionnés n\'ont pas d\'ISBN ; il est impossible de les synchroniser avec Babelio. 
+		La solution la plus simple est de:
+		\n\n(1) supprimer le livre de BookCatalogue
+		\n\n(2) ajouter manuellement le livre à Babelio par leur interface web
+		\n\n(3) Synchroniser avec Babelio
+		\n\nLe livre sera re-créé dans BookCatalogue et les deux livres seront alors liés.</string>
+    <string name="explain_babelio_no_match">L\'ISBN du livre choisi n\'a pas pu être trouvé sur Babelio. Il existe de multiples causes à ça : 
+		soit les données du livre sont erronées (Vérifiez l\'ISBN), soit le livre n\'est pas sur Babelio. 
+		\n\nSi vous modifiez les données sur BookCatalogue, pressez simplement sur le bouton \'Ré-essayer\' et assurez vous 
+		que la tâche associée est exécutée avec succès. 
+		\n\nSi les données semblent correctes et que le livre n\'est toujours pas trouvé, il est alors nécessaire d\'ajouter manuellement un livre portant cet ISBN à Babelio 
+		sur leur site Web. Une fois que c\est fait, vous pouvez essayer de renvoyer le livre.</string>
+		
+    <string name="new_in_510">
+		<![CDATA[
+			<p><b>Nouveau dans la version 5.1.0</b>\n\n
+				* Ajout de l\'import, export et de la synchronisation avec Babelio\n\n
+			</p>
+		]]>
+    </string>
+    <!-- End: Added/Updated in 5.1.0 -->
+    
+    
 </resources>

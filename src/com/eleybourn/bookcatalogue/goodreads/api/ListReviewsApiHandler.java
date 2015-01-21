@@ -127,6 +127,8 @@ public class ListReviewsApiHandler extends ApiHandler {
 		public static final String DB_RATING = CatalogueDBAdapter.KEY_RATING;
 		public static final String DB_READ_START = CatalogueDBAdapter.KEY_READ_START;
 		public static final String DB_READ_END = CatalogueDBAdapter.KEY_READ_END;
+		public static final String BA_BOOK_ID = "__ba_book_id";
+		public static final String BA_REVIEW_ID = "__ba_review_id";
 	}
 
 	private SimpleXmlFilter mFilters;

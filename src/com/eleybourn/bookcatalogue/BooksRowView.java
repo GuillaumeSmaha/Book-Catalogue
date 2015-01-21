@@ -68,6 +68,16 @@ public class BooksRowView {
 		return mCursor.getLong(mGoodreadsBookIdCol);// mCurrentRow[mIsbnCol];
 	}
 
+	private int mBabelioBookIdCol = -2;
+	public final long getBabelioBookId() {
+		if (mBabelioBookIdCol < 0) {
+			mBabelioBookIdCol = mCursor.getColumnIndex(DatabaseDefinitions.DOM_BABELIO_BOOK_ID.name);
+			if (mBabelioBookIdCol < 0)
+				throw new RuntimeException("Babelio Book ID column not in result set");
+		}
+		return mCursor.getLong(mBabelioBookIdCol);// mCurrentRow[mIsbnCol];
+	}
+
 	private int mBookUuidCol = -2;
 	public final String getBookUuid() {
 		if (mBookUuidCol < 0) {
