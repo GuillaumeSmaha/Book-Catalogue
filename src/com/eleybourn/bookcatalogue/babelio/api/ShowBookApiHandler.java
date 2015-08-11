@@ -285,7 +285,7 @@ public abstract class ShowBookApiHandler extends ApiHandler {
         matcher = pattern.matcher(html);
     	matchFound = matcher.find();
     	if(matchFound) {
-	        extract = matcher.group(1).replaceAll("(<br\\s*\\/*?>)", "\n");
+	        extract = matcher.group(1).replaceAll("(?i)(<br\\s*\\/*?>)", "\n");
 	        Log.d("TEST", "DESCRIPTION = "+extract);
     		mBook.putString(CatalogueDBAdapter.KEY_DESCRIPTION, extract);
 	    }

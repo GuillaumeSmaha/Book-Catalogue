@@ -69,6 +69,13 @@ public class AuthUserApiHandler extends ApiHandler {
 	 */
 	public long getAuthUser() throws UnsupportedEncodingException {
 
+		mUserId = 0;
+
+		if(mManager.getId().length() == 0 || mManager.getPass().length() == 0)
+        {
+            return 0;
+        }
+
 		// Setup API call
 		HttpPost post = new HttpPost("http://www.babelio.com/connection.php");
 
@@ -81,8 +88,7 @@ public class AuthUserApiHandler extends ApiHandler {
 		nameValuePairs.add(new BasicNameValuePair("Password", mManager.getPass()));
 		UrlEncodedFormEntity urlEntity = new UrlEncodedFormEntity(nameValuePairs);
 		post.setEntity(urlEntity);
-		
-		mUserId = 0;
+
 		try {
 	        HttpResponse response = mManager.executeResponse(post, false);
 

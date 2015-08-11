@@ -28,6 +28,7 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpGet;
 
 import android.os.Bundle;
+import android.util.Log;
 
 import com.eleybourn.bookcatalogue.BookCatalogueApp;
 import com.eleybourn.bookcatalogue.R;
@@ -52,9 +53,10 @@ public class ShowBookByIsbnApiHandler extends ShowBookApiHandler {
 	/**
 	 * Perform a search and handle the results.
 	 * 
-	 * @param query
+	 * @param isbn
+	 * @param fetchThumbnail
 	 * @return	the array of BabelioWork objects.
-	 * @throws IOException 
+	 * @throws IOException
 	 * @throws BookNotFoundException 
 	 * @throws NotAuthorizedException 
 	 * @throws ClientProtocolException 
@@ -69,20 +71,24 @@ public class ShowBookByIsbnApiHandler extends ShowBookApiHandler {
 
 		// Setup API call //
 		HttpGet get = new HttpGet("http://www.babelio.com/resrecherche.php?item_recherche=isbn&Recherche=" + isbn.trim());
+		Log.d("TEST", "ISBN TEST FOUND ?");
 
 		try {
 	        String html = mManager.executeRaw(get, false);
 
+			Log.d("TEST", "ISBN TEST FOUND ? EXECUTE");
 	        Pattern pattern = Pattern.compile("<a href=\"/livres/([a-zA-Z0-9_-]+)/([0-9]+)\" class=\"titre1\"");
 	        Matcher matcher = pattern.matcher(html);
 
 	        boolean find = matcher.find();
 	        if(find)
 	        {
+				Log.d("TEST","ISBN FOUND");
 	    		HttpGet getBook = new HttpGet("http://www.babelio.com/livres/%20/" + matcher.group(2)+"/41portee=editeur&desc_smenu=l");
 	        	return sendRequest(getBook, fetchThumbnail);
 	        }
 		} catch (Exception e) {
+			throw new RuntimeException(e.getMessage());
 		}
 
     	return new Bundle();   

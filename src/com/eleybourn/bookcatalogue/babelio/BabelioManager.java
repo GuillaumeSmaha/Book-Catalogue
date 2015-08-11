@@ -318,7 +318,7 @@ public class BabelioManager {
 		HttpClient httpClient = newHttpClient();
 
 		// Sign the request and wait until we can submit it legally.
-		if(requiresSignature && m_accessPhpsessid.length() > 0)
+		if(requiresSignature && m_accessPhpsessid != null && m_accessPhpsessid.length() > 0)
 		{
 			String sessionCookie = "PHPSESSID="+m_accessPhpsessid;
 			request.setHeader("Cookie", sessionCookie);
@@ -365,7 +365,7 @@ public class BabelioManager {
 		HttpClient httpClient = newHttpClient();
 
 		// Sign the request and wait until we can submit it legally.
-		if(requiresSignature && m_accessPhpsessid.length() > 0)
+		if(requiresSignature && m_accessPhpsessid != null && m_accessPhpsessid.length() > 0)
 		{
 			String sessionCookie = "PHPSESSID="+m_accessPhpsessid;
 			request.setHeader("Cookie", sessionCookie);
@@ -419,7 +419,7 @@ public class BabelioManager {
 		HttpClient httpClient = newHttpClient();
 
 		// Sign the request and wait until we can submit it legally.
-		if(requiresSignature && m_accessPhpsessid.length() > 0)
+		if(requiresSignature && m_accessPhpsessid != null && m_accessPhpsessid.length() > 0)
 		{
 			String sessionCookie = "PHPSESSID="+m_accessPhpsessid;
 			request.setHeader("Cookie", sessionCookie);
@@ -454,7 +454,7 @@ public class BabelioManager {
 	}
 
 	/**
-	 * Utility routine called to sign a request and submit it then return the raw text output.
+	 * Check if the user is connected or not
 	 *
 	 * @author Guillaume Smaha
 	 */
@@ -483,7 +483,7 @@ public class BabelioManager {
 		HttpClient httpClient = newHttpClient();
 
 		// Sign the request and wait until we can submit it legally.
-		if(m_accessPhpsessid.length() > 0)
+		if(m_accessPhpsessid != null && m_accessPhpsessid.length() > 0)
 		{
 			String sessionCookie = "PHPSESSID="+m_accessPhpsessid;
 			request.setHeader("Cookie", sessionCookie);
@@ -491,6 +491,7 @@ public class BabelioManager {
 		
     	waitUntilRequestAllowed();
 
+        Log.d("TEST", "executeRaw execute");
     	// Submit the request then process result.
     	HttpResponse response = null;
     	try {
@@ -514,10 +515,12 @@ public class BabelioManager {
             }
         }
 
+		Log.d("TEST", "executeRaw code "+code);
+
         if (code == 200 || code == 201 || code == 302) {
         	
         	String htmlStr = html.toString();
-    		if(requiresSignature && m_accessPhpsessid.length() > 0)
+    		if(requiresSignature && m_accessPhpsessid != null && m_accessPhpsessid.length() > 0)
     		{
     			if(!checkConnection(htmlStr))
     			{

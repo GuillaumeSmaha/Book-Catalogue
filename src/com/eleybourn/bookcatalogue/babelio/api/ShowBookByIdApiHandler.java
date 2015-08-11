@@ -49,8 +49,9 @@ public class ShowBookByIdApiHandler extends ShowBookApiHandler {
 
 	/**
 	 * Perform a search and handle the results.
-	 * 
-	 * @param query
+	 *
+	 * @param workId
+	 * @param fetchThumbnail
 	 * @return	the array of BabelioWork objects.
 	 * @throws IOException 
 	 * @throws BookNotFoundException 
