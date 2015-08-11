@@ -46,7 +46,6 @@ public class ShowBookByIsbnApiHandler extends ShowBookApiHandler {
 
 	
 	public ShowBookByIsbnApiHandler(BabelioManager manager) {
-		// TODO: If babelio fix signed book.show_by_isbn requests, change false to true...
 		super(manager);
 	}
 
