@@ -242,7 +242,7 @@ public abstract class ShowBookApiHandler extends ApiHandler {
     	}
     	
     	//Is readed & Is loaned
-        pattern = Pattern.compile("(?u)\">(Lu|A lire|En cours|Pense-bête)(, A échanger)?( , Emprunté)?( )?</div></b>([\t\r\n]+)<span class=\"lien_t1\"");
+        pattern = Pattern.compile("(?u)\">(Lu|A lire|En cours|Pense-bÃªte)(, A Ã©changer)?( , EmpruntÃ©)?( )?</div></b>([\t\r\n]+)<span class=\"lien_t1\"");
         matcher = pattern.matcher(html);
     	matchFound = matcher.find();
     	if(matchFound) {
@@ -285,7 +285,7 @@ public abstract class ShowBookApiHandler extends ApiHandler {
         matcher = pattern.matcher(html);
     	matchFound = matcher.find();
     	if(matchFound) {
-	        extract = matcher.group(1);
+	        extract = matcher.group(1).replaceAll("(<br\\s*\\/*?>)", "\n");
 	        Log.d("TEST", "DESCRIPTION = "+extract);
     		mBook.putString(CatalogueDBAdapter.KEY_DESCRIPTION, extract);
 	    }
