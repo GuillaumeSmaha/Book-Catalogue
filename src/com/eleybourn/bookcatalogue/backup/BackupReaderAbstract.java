@@ -29,7 +29,6 @@ import android.content.SharedPreferences;
 import com.eleybourn.bookcatalogue.BookCatalogueApp;
 import com.eleybourn.bookcatalogue.BookCataloguePreferences;
 import com.eleybourn.bookcatalogue.CatalogueDBAdapter;
-import com.eleybourn.bookcatalogue.backup.Importer.OnImporterListener;
 import com.eleybourn.bookcatalogue.booklist.BooklistStyle;
 import com.eleybourn.bookcatalogue.database.SerializationUtils.DeserializationException;
 import com.eleybourn.bookcatalogue.utils.Logger;
@@ -63,7 +62,14 @@ public abstract class BackupReaderAbstract implements BackupReader {
 
 		// This is an estimate only; we actually don't know how many covers
 		// there are in the backup.
-		listener.setMax((int) (getInfo().getBookCount() * 2 + 1));
+		BackupInfo info = getInfo();
+		int maxSteps = (int) (info.getBookCount());
+		if (info.hasCoverCount())
+			maxSteps += info.getCoverCount();
+		else 
+			maxSteps *= 2;
+		maxSteps++;
+		listener.setMax(maxSteps);
 
 		// Get first entity (this will be the entity AFTER the INFO entities)
 		ReaderEntity entity = nextEntity();
@@ -143,17 +149,18 @@ public abstract class BackupReaderAbstract implements BackupReader {
 	 */
 	private void restoreCover(BackupReaderListener listener, ReaderEntity cover, int flags) throws IOException {
 		listener.step("Processing Covers...", 1);
-		if ( (flags & Importer.IMPORT_NEW_OR_UPDATED) != 0) {
-			File curr = new File(mSharedStorage + "/" + cover.getName());
+		final File curr = new File(mSharedStorage + "/" + cover.getName());
+		final Date covDate = cover.getDateModified();
+		if ( (flags & Importer.IMPORT_NEW_OR_UPDATED) != 0) {			
 			if (curr.exists()) {
 				Date currFileDate = new Date(curr.lastModified());
-				Date covDate = cover.getDateModified();
 				if (currFileDate.compareTo(covDate) >= 0) {
 					return;
 				}
 			}
 		}
 		cover.saveToDirectory(mSharedStorage);
+		curr.setLastModified(covDate.getTime());
 	}
 
 	/**

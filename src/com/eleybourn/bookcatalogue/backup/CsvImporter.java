@@ -32,9 +32,9 @@ import com.eleybourn.bookcatalogue.Author;
 import com.eleybourn.bookcatalogue.BookCatalogueApp;
 import com.eleybourn.bookcatalogue.BookData;
 import com.eleybourn.bookcatalogue.CatalogueDBAdapter;
+import com.eleybourn.bookcatalogue.ImportThread.ImportException;
 import com.eleybourn.bookcatalogue.R;
 import com.eleybourn.bookcatalogue.Series;
-import com.eleybourn.bookcatalogue.ImportThread.ImportException;
 import com.eleybourn.bookcatalogue.booklist.DatabaseDefinitions;
 import com.eleybourn.bookcatalogue.database.DbSync.Synchronizer.SyncLock;
 import com.eleybourn.bookcatalogue.utils.Logger;
@@ -207,9 +207,13 @@ public class CsvImporter {
 						}
 					}
 
+					// A pre-existing bug sometimes results in blank author-details due to bad underlying data
+					// (it seems a 'book' record gets written without an 'author' record; should not happen)
+					// so we allow blank author_details and full in a regionalized version of "Author, Unknown"
 					if (authorDetails == null || authorDetails.length() == 0) {
-						String s = BookCatalogueApp.getResourceString(R.string.column_is_blank);
-						throw new ImportException(String.format(s, CatalogueDBAdapter.KEY_AUTHOR_DETAILS, row));
+						authorDetails = BookCatalogueApp.getResourceString(R.string.author) + ", " + BookCatalogueApp.getResourceString(R.string.unknown);
+						//String s = BookCatalogueApp.getResourceString(R.string.column_is_blank);
+						//throw new ImportException(String.format(s, CatalogueDBAdapter.KEY_AUTHOR_DETAILS, row));
 					}
 
 					// Now build the array for authors

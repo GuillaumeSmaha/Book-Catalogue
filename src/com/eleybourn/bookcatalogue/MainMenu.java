@@ -43,8 +43,6 @@ import org.apache.http.message.AbstractHttpMessage;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 
-import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -97,6 +95,7 @@ public class MainMenu extends BookCatalogueActivity {
 
 		// If we get here, we're meant to be in this activity.
 		setContentView(R.layout.main_menu);
+		setTitle(R.string.app_name);
 
 		// Display/hide the 'classic' my books item
 		int classicVis;
@@ -124,8 +123,10 @@ public class MainMenu extends BookCatalogueActivity {
 		
 		
 		
-		if (savedInstanceState == null)
+		if (savedInstanceState == null) {
+			HintManager.displayHint(this, R.string.hint_evan_book, null);
 			HintManager.displayHint(this, R.string.hint_startup_screen, null);
+		}
 
 		Utils.initBackground(R.drawable.bc_background_gradient, this, true);
 	}

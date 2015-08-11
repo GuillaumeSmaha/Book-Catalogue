@@ -22,8 +22,8 @@ package com.eleybourn.bookcatalogue;
 import static com.eleybourn.bookcatalogue.booklist.DatabaseDefinitions.DOM_AUTHOR_ID;
 import static com.eleybourn.bookcatalogue.booklist.DatabaseDefinitions.DOM_AUTHOR_NAME;
 import static com.eleybourn.bookcatalogue.booklist.DatabaseDefinitions.DOM_BOOK;
-import static com.eleybourn.bookcatalogue.booklist.DatabaseDefinitions.DOM_BOOK_UUID;
 import static com.eleybourn.bookcatalogue.booklist.DatabaseDefinitions.DOM_BOOKSHELF_ID;
+import static com.eleybourn.bookcatalogue.booklist.DatabaseDefinitions.DOM_BOOK_UUID;
 import static com.eleybourn.bookcatalogue.booklist.DatabaseDefinitions.DOM_DESCRIPTION;
 import static com.eleybourn.bookcatalogue.booklist.DatabaseDefinitions.DOM_DOCID;
 import static com.eleybourn.bookcatalogue.booklist.DatabaseDefinitions.DOM_GENRE;
@@ -46,9 +46,9 @@ import static com.eleybourn.bookcatalogue.booklist.DatabaseDefinitions.TBL_AUTHO
 import static com.eleybourn.bookcatalogue.booklist.DatabaseDefinitions.TBL_BOOKS;
 import static com.eleybourn.bookcatalogue.booklist.DatabaseDefinitions.TBL_BOOKS_FTS;
 import static com.eleybourn.bookcatalogue.booklist.DatabaseDefinitions.TBL_BOOK_AUTHOR;
+import static com.eleybourn.bookcatalogue.booklist.DatabaseDefinitions.TBL_BOOK_BOOKSHELF;
 import static com.eleybourn.bookcatalogue.booklist.DatabaseDefinitions.TBL_BOOK_LIST_STYLES;
 import static com.eleybourn.bookcatalogue.booklist.DatabaseDefinitions.TBL_BOOK_SERIES;
-import static com.eleybourn.bookcatalogue.booklist.DatabaseDefinitions.TBL_BOOK_BOOKSHELF;
 import static com.eleybourn.bookcatalogue.booklist.DatabaseDefinitions.TBL_SERIES;
 import static com.eleybourn.bookcatalogue.booklist.DatabaseDefinitions.DOM_BABELIO_BOOK_ID;
 import static com.eleybourn.bookcatalogue.booklist.DatabaseDefinitions.DOM_LAST_BABELIO_SYNC_DATE;
@@ -90,6 +90,7 @@ import com.eleybourn.bookcatalogue.database.DbSync.Synchronizer.SyncLock;
 import com.eleybourn.bookcatalogue.database.DbUtils.TableDefinition;
 import com.eleybourn.bookcatalogue.database.SerializationUtils;
 import com.eleybourn.bookcatalogue.database.SqlStatementManager;
+import com.eleybourn.bookcatalogue.utils.IsbnUtils;
 import com.eleybourn.bookcatalogue.utils.Logger;
 import com.eleybourn.bookcatalogue.utils.StorageUtils;
 import com.eleybourn.bookcatalogue.utils.TrackedCursor;
@@ -3121,18 +3122,29 @@ public class CatalogueDBAdapter {
 		}
 	}
 
-	private SynchronizedStatement mGetIdFromIsbnStmt = null;
+	private SynchronizedStatement mGetIdFromIsbn1Stmt = null;
+	private SynchronizedStatement mGetIdFromIsbn2Stmt = null;
 	/**
 	 * 
 	 * @param isbn The isbn to search by
 	 * @return boolean indicating ISBN already in DB
 	 */
-	public long getIdFromIsbn(String isbn) {
-		if (mGetIdFromIsbnStmt == null) {
-			mGetIdFromIsbnStmt = mStatements.add("mGetIdFromIsbnStmt", "Select Coalesce(max(" + KEY_ROWID + "), -1) From " + DB_TB_BOOKS + " Where Upper(" + KEY_ISBN + ") = Upper(?)");
+	public long getIdFromIsbn(String isbn, boolean checkAltIsbn) {
+		SynchronizedStatement stmt;
+		if (checkAltIsbn && IsbnUtils.isValid(isbn)) {
+			if (mGetIdFromIsbn2Stmt == null) {
+				mGetIdFromIsbn2Stmt = mStatements.add("mGetIdFromIsbn2Stmt", "Select Coalesce(max(" + KEY_ROWID + "), -1) From " + DB_TB_BOOKS + " Where Upper(" + KEY_ISBN + ") in (Upper(?), Upper(?))");
+			}
+			stmt = mGetIdFromIsbn2Stmt;
+			stmt.bindString(2, IsbnUtils.isbn2isbn(isbn));
+		} else {
+			if (mGetIdFromIsbn1Stmt == null) {
+				mGetIdFromIsbn1Stmt = mStatements.add("mGetIdFromIsbn1Stmt", "Select Coalesce(max(" + KEY_ROWID + "), -1) From " + DB_TB_BOOKS + " Where Upper(" + KEY_ISBN + ") = Upper(?)");
+			}
+			stmt = mGetIdFromIsbn1Stmt;
 		}
-		mGetIdFromIsbnStmt.bindString(1, isbn);
-		return mGetIdFromIsbnStmt.simpleQueryForLong();
+		stmt.bindString(1, isbn);
+		return stmt.simpleQueryForLong();
 	}
 	
 	/**
@@ -3140,8 +3152,8 @@ public class CatalogueDBAdapter {
 	 * @param isbn The isbn to search by
 	 * @return boolean indicating ISBN already in DB
 	 */
-	public boolean checkIsbnExists(String isbn) {
-		return getIdFromIsbn(isbn) > 0;
+	public boolean checkIsbnExists(String isbn, boolean checkAltIsbn) {
+		return getIdFromIsbn(isbn, checkAltIsbn) > 0;
 	}
 	
 	/**
@@ -5520,7 +5532,7 @@ public class CatalogueDBAdapter {
 
 			// Update books but prevent duplicate index errors
 			sql = "Update " + DB_TB_BOOKS + " Set " + KEY_FORMAT + " = '" + encodeString(newFormat) 
-					+ "', " + DOM_LAST_UPDATE_DATE + " = current_timetamp "
+					+ "', " + DOM_LAST_UPDATE_DATE + " = current_timestamp "
 					+ " Where " + KEY_FORMAT + " = '" + encodeString(oldFormat) + "'";
 			mDb.execSQL(sql);	
 			
@@ -6141,13 +6153,63 @@ public class CatalogueDBAdapter {
 	/**
 	 * Cleanup a search string to remove all quotes etc.
 	 * 
-	 * TODO: Consider adding a '*' to the end of all words. Or make it an option.
+	 * Remove punctuation from the search string to TRY to match the tokenizer. The only punctuation we
+	 * allow is a hypen preceded by a space. Everything else is translated to a space.
+	 * 
+	 * TODO: Consider making '*' to the end of all words a preference item.
 	 * 
 	 * @param s		Search criteria to clean
 	 * @return		Clean string
 	 */
-	private String cleanupFtsCriterion(String s) {
-		return s.replace("'", " ").replace("\"", " ").trim();
+	public static String cleanupFtsCriterion(String search) {
+		//return s.replace("'", " ").replace("\"", " ").trim();
+
+		if (search.length() <= 1)
+			return search;
+
+		// Output bufgfer
+		final StringBuilder out = new StringBuilder();
+		// Array (convenience)
+		final char[] chars = search.toCharArray();
+		// Cached length
+		final int len = chars.length;
+		// Initial position
+		int pos = 0;
+		// Dummy 'previous' character
+		char prev = ' ';
+
+		// Loop over array
+		while(pos < len) {
+			char curr = chars[pos];
+			// If current is letter or ...use it.
+			if (Character.isLetterOrDigit(curr)) {
+				out.append(curr);
+			} else if (curr == '-' && Character.isWhitespace(prev)) {
+				// Allow negation if preceded by space
+				out.append(curr);
+			} else {
+				// Eveything else is whitespace
+				curr = ' ';
+				if (!Character.isWhitespace(prev)) {
+					// If prev character was non-ws, and not negation, make wildcard
+					if (prev != '-') {
+						// Make every token a wildcard
+						// TODO: Make this a preference
+						out.append('*');
+					}
+					// Append a whitespace only when last char was not a whitespace
+					out.append(' ');
+				}
+			}
+			prev = curr;
+			pos++;
+		}
+		if (!Character.isWhitespace(prev) && (prev != '-')) {
+			// Make every token a wildcard
+			// TODO: Make this a preference
+			out.append('*');			
+		}
+		return out.toString();
 	}
 
 	/**

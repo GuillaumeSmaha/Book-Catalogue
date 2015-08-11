@@ -58,6 +58,9 @@ public class UpgradeMessageManager {
 	.add(147, R.string.new_in_504)
 	.add(149, R.string.new_in_505)
 	.add(152, R.string.new_in_508)
+	.add(154, R.string.new_in_509)
+	.add(162, R.string.new_in_510)
+	.add(166, R.string.new_in_511)
 	;
 
 	

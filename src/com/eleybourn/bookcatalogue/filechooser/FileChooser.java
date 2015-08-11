@@ -21,9 +21,7 @@ package com.eleybourn.bookcatalogue.filechooser;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Comparator;
 
-import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -223,7 +221,7 @@ public abstract class FileChooser extends BookCatalogueActivity implements
 		FileLister lister = getFileLister(root);
 
 		// Start the task
-		SimpleTaskQueueProgressFragment.runTaskWithProgress(this, 0, lister, true, 0);
+		SimpleTaskQueueProgressFragment.runTaskWithProgress(this, R.string.searching_directory_ellipsis, lister, true, 0);
 
 	}
 }

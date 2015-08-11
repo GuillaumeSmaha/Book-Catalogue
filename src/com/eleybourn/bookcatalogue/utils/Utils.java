@@ -20,6 +20,7 @@
 
 package com.eleybourn.bookcatalogue.utils;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -31,6 +32,7 @@ import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.net.UnknownHostException;
 import java.security.MessageDigest;
 import java.text.DateFormat;
@@ -74,10 +76,17 @@ import android.graphics.drawable.LayerDrawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.text.Html;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.style.URLSpan;
+import android.text.util.Linkify;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockFragment;
 import com.eleybourn.bookcatalogue.Author;
@@ -88,9 +97,11 @@ import com.eleybourn.bookcatalogue.LibraryThingManager;
 import com.eleybourn.bookcatalogue.R;
 import com.eleybourn.bookcatalogue.Series;
 import com.eleybourn.bookcatalogue.ThumbnailCacheWriterTask;
+import com.eleybourn.bookcatalogue.amazon.AmazonUtils;
 import com.eleybourn.bookcatalogue.database.CoversDbHelper;
 import com.eleybourn.bookcatalogue.dialogs.PartialDatePickerFragment;
 import com.eleybourn.bookcatalogue.dialogs.StandardDialogs;
+
 
 public class Utils {
 	// External DB for cover thumbnails
@@ -115,7 +126,7 @@ public class Utils {
 
 	private static final ArrayList<SimpleDateFormat> mParseDateFormats = new ArrayList<SimpleDateFormat>();
 	static {
-		final boolean isEnglish = (Locale.getDefault().getLanguage() == Locale.ENGLISH.getLanguage());
+		final boolean isEnglish = (Locale.getDefault().getLanguage().equals(Locale.ENGLISH.getLanguage()));
 		addParseDateFormat(!isEnglish, "dd-MMM-yyyy HH:mm:ss");
 		addParseDateFormat(!isEnglish, "dd-MMM-yyyy HH:mm");
 		addParseDateFormat(!isEnglish, "dd-MMM-yyyy");
@@ -655,6 +666,34 @@ public class Utils {
 		return f.toByteArray();
 	}
 
+	private static class ConnectionInfo {
+		URLConnection conn = null;
+		StatefulBufferedInputStream is = null;
+	}
+	
+	public static class StatefulBufferedInputStream extends BufferedInputStream {
+		private boolean mIsClosed = false;
+
+		public StatefulBufferedInputStream(InputStream in) {
+			super(in);
+		}
+		public StatefulBufferedInputStream(InputStream in, int i) {
+			super(in, i);
+		}
+
+		@Override
+		public void close() throws IOException {
+			try {
+				super.close();				
+			} finally {
+				mIsClosed = true;				
+			}
+		}
+		
+		public boolean isClosed() {
+			return mIsClosed;
+		}
+	}
 	/**
 	 * Utility routine to get the data from a URL. Makes sure timeout is set to avoid application
 	 * stalling.
@@ -670,9 +709,73 @@ public class Utils {
 			int retries = 3;
 			while (true) {
 				try {
-					java.net.URLConnection conn = url.openConnection();
-					conn.setConnectTimeout(30000);
-					return conn.getInputStream();
+					/*
+					 * This is quite nasty; there seems to be a bug with URL.openConnection
+					 *
+					 * It CAN be reduced by doing the following:
+					 * 
+					 *     ((HttpURLConnection)conn).setRequestMethod("GET");
+					 *     
+					 * but I worry about future-proofing and the assumption that URL.openConnection
+					 * will always return a HttpURLConnection. OFC, it probably will...until it doesn't.
+					 * 
+					 * Using HttpClient and HttpGet explicitly seems to bypass the casting
+					 * problem but still does not allow the timeouts to work, or only works intermittently.
+					 * 
+					 * Finally, there is another problem with faild timeouts:
+					 * 
+					 *     http://thushw.blogspot.hu/2010/10/java-urlconnection-provides-no-fail.html
+					 * 
+					 * So...we are forced to use a background thread to kill it.
+					 */
+					
+					// If at some stage in the future the casting code breaks...use the Apache one.
+					//final HttpClient client = new DefaultHttpClient();
+					//final HttpParams httpParameters = client.getParams();
+					//
+					//HttpConnectionParams.setConnectionTimeout(httpParameters, 30 * 1000);
+					//HttpConnectionParams.setSoTimeout        (httpParameters, 30 * 1000);
+					//
+					//final HttpGet conn = new HttpGet(url.toString());
+					//
+					//HttpResponse response = client.execute(conn);
+					//InputStream is = response.getEntity().getContent();
+					//return new BufferedInputStream(is);
+
+					final ConnectionInfo connInfo = new ConnectionInfo();
+
+					connInfo.conn = url.openConnection();
+					connInfo.conn.setUseCaches(false);
+					connInfo.conn.setDoInput(true);
+					connInfo.conn.setDoOutput(false);
+
+					if (connInfo.conn instanceof HttpURLConnection)
+						((HttpURLConnection)connInfo.conn).setRequestMethod("GET");
+
+					connInfo.conn.setConnectTimeout(30000);
+					connInfo.conn.setReadTimeout(30000);
+
+					Terminator.enqueue(new Runnable() {
+						@Override
+						public void run() {
+							if (connInfo.is != null) {
+								if (!connInfo.is.isClosed()) {
+									try {
+										connInfo.is.close();
+										((HttpURLConnection)connInfo.conn).disconnect();
+									} catch (IOException e) {
+										Logger.logError(e);
+									}									
+								}
+							} else {
+								((HttpURLConnection)connInfo.conn).disconnect();								
+							}
+
+						}}, 30000);
+					connInfo.is = new StatefulBufferedInputStream(connInfo.conn.getInputStream());
+
+					return connInfo.is;
+
 				} catch (java.net.UnknownHostException e) {
 					Logger.logError(e);
 					retries--;
@@ -1472,16 +1575,18 @@ public class Utils {
 		}
 		return String.format(sizeFmt,space);		
 	}
-	
+
 	/**
 	 * Set the passed Activity background based on user preferences
 	 */
 	public static void initBackground(int bgResource, Activity a, boolean bright) {
 		initBackground(bgResource, a.findViewById(R.id.root), bright);
 	}
-	public static void initBackground(int bgResource, SherlockFragment f, boolean bright) {
+
+    public static void initBackground(int bgResource, SherlockFragment f, boolean bright) {
 		initBackground(bgResource, f.getView().findViewById(R.id.root), bright);
 	}
+
 	/**
 	 * Set the passed Activity background based on user preferences
 	 */
@@ -1510,6 +1615,8 @@ public class Utils {
 			}
 			root.invalidate();
 		} catch (Exception e) {
+            // Usually the errors result from memory problems; do a gc just in case.
+            System.gc();
 			// This is a purely cosmetic function; just log the error
 			Logger.logError(e, "Error setting background");
 		}
@@ -2016,5 +2123,55 @@ public class Utils {
 			return stringToBoolean(o.toString(), true);
 		}
 	}
+
+	public static void openAmazonSearchPage(Activity context, String author, String series) {
+		
+		try {
+			AmazonUtils.openLink(context, author, series);
+		} catch(Exception ae) {
+			// An Amazon error should not crash the app
+			Logger.logError(ae, "Unable to call the Amazon API");
+			Toast.makeText(context, R.string.unexpected_error, Toast.LENGTH_LONG).show();
+			// This code works, but Amazon have a nasty tendency to cancel Associate IDs...
+			//String baseUrl = "http://www.amazon.com/gp/search?index=books&tag=philipwarneri-20&tracking_id=philipwarner-20";
+			//String extra = AmazonUtils.buildSearchArgs(author, series);
+			//if (extra != null && !extra.trim().equals("")) {
+			//	Intent loadweb = new Intent(Intent.ACTION_VIEW, Uri.parse(baseUrl + extra));
+			//	context.startActivity(loadweb); 			
+			//}			
+		}
+		return;
+	}
+	
+	/**
+	 * Linkify partial HTML. Linkify methods remove all spans before building links, this
+	 * method preserves them.
+	 * 
+	 * See: http://stackoverflow.com/questions/14538113/using-linkify-addlinks-combine-with-html-fromhtml
+	 * 
+	 * @param html			Partial HTML
+	 * @param linkifyMask	Linkify mask to use in Linkify.addLinks
+	 * 
+	 * @return				Spannable with all links
+	 */
+	public static Spannable linkifyHtml(String html, int linkifyMask) {
+		// Get the spannable HTML
+	    Spanned text = Html.fromHtml(html);
+	    // Save the span details for later restoration
+	    URLSpan[] currentSpans = text.getSpans(0, text.length(), URLSpan.class);
+
+	    // Build an empty spannable then add the links
+	    SpannableString buffer = new SpannableString(text);
+	    Linkify.addLinks(buffer, linkifyMask);
+
+	    // Add back the HTML spannables
+	    for (URLSpan span : currentSpans) {
+	        int end = text.getSpanEnd(span);
+	        int start = text.getSpanStart(span);
+	        buffer.setSpan(span, start, end, 0);
+	    }
+	    return buffer;
+	}
+
 }
 

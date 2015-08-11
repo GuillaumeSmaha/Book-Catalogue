@@ -34,6 +34,7 @@ import static com.eleybourn.bookcatalogue.booklist.DatabaseDefinitions.DOM_AUTHO
 import static com.eleybourn.bookcatalogue.booklist.DatabaseDefinitions.DOM_AUTHOR_POSITION;
 import static com.eleybourn.bookcatalogue.booklist.DatabaseDefinitions.DOM_AUTHOR_SORT;
 import static com.eleybourn.bookcatalogue.booklist.DatabaseDefinitions.DOM_BOOK;
+import static com.eleybourn.bookcatalogue.booklist.DatabaseDefinitions.DOM_BOOKSHELF_ID;
 import static com.eleybourn.bookcatalogue.booklist.DatabaseDefinitions.DOM_BOOKSHELF_NAME;
 import static com.eleybourn.bookcatalogue.booklist.DatabaseDefinitions.DOM_BOOK_COUNT;
 import static com.eleybourn.bookcatalogue.booklist.DatabaseDefinitions.DOM_BOOK_UUID;
@@ -45,6 +46,7 @@ import static com.eleybourn.bookcatalogue.booklist.DatabaseDefinitions.DOM_GIVEN
 import static com.eleybourn.bookcatalogue.booklist.DatabaseDefinitions.DOM_ID;
 import static com.eleybourn.bookcatalogue.booklist.DatabaseDefinitions.DOM_KIND;
 import static com.eleybourn.bookcatalogue.booklist.DatabaseDefinitions.DOM_LANGUAGE;
+import static com.eleybourn.bookcatalogue.booklist.DatabaseDefinitions.DOM_LAST_UPDATE_DATE;
 import static com.eleybourn.bookcatalogue.booklist.DatabaseDefinitions.DOM_LEVEL;
 import static com.eleybourn.bookcatalogue.booklist.DatabaseDefinitions.DOM_LOANED_TO;
 import static com.eleybourn.bookcatalogue.booklist.DatabaseDefinitions.DOM_LOANED_TO_SORT;
@@ -54,6 +56,7 @@ import static com.eleybourn.bookcatalogue.booklist.DatabaseDefinitions.DOM_PRIMA
 import static com.eleybourn.bookcatalogue.booklist.DatabaseDefinitions.DOM_PUBLICATION_MONTH;
 import static com.eleybourn.bookcatalogue.booklist.DatabaseDefinitions.DOM_PUBLICATION_YEAR;
 import static com.eleybourn.bookcatalogue.booklist.DatabaseDefinitions.DOM_PUBLISHER;
+import static com.eleybourn.bookcatalogue.booklist.DatabaseDefinitions.DOM_RATING;
 import static com.eleybourn.bookcatalogue.booklist.DatabaseDefinitions.DOM_READ;
 import static com.eleybourn.bookcatalogue.booklist.DatabaseDefinitions.DOM_READ_DAY;
 import static com.eleybourn.bookcatalogue.booklist.DatabaseDefinitions.DOM_READ_END;
@@ -69,6 +72,9 @@ import static com.eleybourn.bookcatalogue.booklist.DatabaseDefinitions.DOM_SERIE
 import static com.eleybourn.bookcatalogue.booklist.DatabaseDefinitions.DOM_SERIES_POSITION;
 import static com.eleybourn.bookcatalogue.booklist.DatabaseDefinitions.DOM_TITLE;
 import static com.eleybourn.bookcatalogue.booklist.DatabaseDefinitions.DOM_TITLE_LETTER;
+import static com.eleybourn.bookcatalogue.booklist.DatabaseDefinitions.DOM_UPDATE_DAY;
+import static com.eleybourn.bookcatalogue.booklist.DatabaseDefinitions.DOM_UPDATE_YEAR;
+import static com.eleybourn.bookcatalogue.booklist.DatabaseDefinitions.DOM_UPDATE_MONTH;
 import static com.eleybourn.bookcatalogue.booklist.DatabaseDefinitions.DOM_VISIBLE;
 import static com.eleybourn.bookcatalogue.booklist.DatabaseDefinitions.TBL_AUTHORS;
 import static com.eleybourn.bookcatalogue.booklist.DatabaseDefinitions.TBL_BOOKS;
@@ -511,20 +517,35 @@ public class BooklistBuilder {
 		for(SynchronizedStatement s : mLevelBuildStmts)
 			s.execute();
 	}
-	
+
+	private String mUNKNOWNText = null;
+	/**
+	 * Accessor for resource string used in queries.
+	 * @return
+	 */
+	private String getUNKNOWNText() {
+		if (mUNKNOWNText == null) {
+			mUNKNOWNText = BookCatalogueApp.getResourceString(R.string.unknown_uc);
+		}
+		return mUNKNOWNText;
+	}
+
 	/**
 	 * Utility function to retrun a glob expression to get the 'year' from a text date field in a standard way.
 	 * 
 	 * Just look for 4 leading numbers. We don't care about anything else.
 	 * 
 	 * @param fieldSpec fully qualified field name
+	 * @param toLocal	convert the fieldSpec to local time from UTC
 	 * 
 	 * @return expression
 	 */
-	private String yearGlob(final String fieldSpec) {
+	private String yearGlob(String fieldSpec, boolean toLocal) {
+		if (toLocal) 
+			fieldSpec = "datetime(" + fieldSpec + ", 'localtime')";
 		return "case when " + fieldSpec + " glob '[0123456789][01234567890][01234567890][01234567890]*'\n" +
 				"	Then substr(" + fieldSpec + ", 1, 4) \n" +
-				" else 'UNKNOWN' end";
+				" else '" + getUNKNOWNText() + "' end";
 	}
 
 	/**
@@ -533,17 +554,20 @@ public class BooklistBuilder {
 	 * Just look for 4 leading numbers followed by 2 or 1 digit. We don't care about anything else.
 	 * 
 	 * @param fieldSpec fully qualified field name
+	 * @param toLocal	convert the fieldSpec to local time from UTC
 	 * 
 	 * @return expression
 	 */
-	private String monthGlob(final String fieldSpec) {
+	private String monthGlob(String fieldSpec, boolean toLocal) {
+		if (toLocal) 
+			fieldSpec = "datetime(" + fieldSpec + ", 'localtime')";
 		return "case when " + fieldSpec + 
 								" glob '[0123456789][01234567890][01234567890][01234567890]-[0123456789][01234567890]*'\n" +
 								"	Then substr(" + fieldSpec + ", 6, 2) \n" +
 								" when " + fieldSpec + 
 								" glob '[0123456789][01234567890][01234567890][01234567890]-[0123456789]*'\n" +
 								"	Then substr(" + fieldSpec + ", 6, 1) \n" +
-								" else 'UNKNOWN' end";
+								" else '" + getUNKNOWNText() + "' end";
 	}
 
 	/**
@@ -552,10 +576,13 @@ public class BooklistBuilder {
 	 * Just look for 4 leading numbers followed by 2 or 1 digit, and then 1 or two digits. We don't care about anything else.
 	 * 
 	 * @param fieldSpec fully qualified field name
+	 * @param toLocal	convert the fieldSpec to local time from UTC
 	 * 
 	 * @return expression
 	 */
-	private String dayGlob(final String fieldSpec) {
+	private String dayGlob(String fieldSpec, boolean toLocal) {
+		if (toLocal) 
+			fieldSpec = "datetime(" + fieldSpec + ", 'localtime')";
 		// Just look for 4 leading numbers followed by 2 or 1 digit. We don't care about anything else.
 		return "case " +
 								" when " + fieldSpec + 
@@ -631,6 +658,8 @@ public class BooklistBuilder {
 			BooklistAuthorGroup authorGroup = null;
 			// Will be set to TRUE if a LOANED group exists in style
 			boolean hasGroupLOANED = false;
+			// Will be set to TRUE if a BOOKSHELF group exists in style
+			boolean hasGroupBOOKSHELF = false;
 	
 			// We can not use triggers to fill in headings in API < 8 since SQLite 3.5.9 is broken
 			// Allow for the user preferences to override in case another build is borken.
@@ -740,10 +769,23 @@ public class BooklistBuilder {
 					g.setKeyComponents("loc", DOM_LOCATION);
 					break;
 	
+				case ROW_KIND_BOOKSHELF:
+					g.displayDomain = DOM_BOOKSHELF_NAME;
+					summary.addDomain(DOM_BOOKSHELF_NAME, "Coalesce(" + TBL_BOOKSHELF.dot(DOM_BOOKSHELF_NAME) + ", '')", SummaryBuilder.FLAG_GROUPED | SummaryBuilder.FLAG_SORTED);
+					g.setKeyComponents("shelf", DOM_BOOKSHELF_NAME);
+					hasGroupBOOKSHELF = true;
+					break;
+	
 				case ROW_KIND_PUBLISHER:
 					g.displayDomain = DOM_PUBLISHER;
 					summary.addDomain(DOM_PUBLISHER, TBL_BOOKS.dot(DOM_PUBLISHER), SummaryBuilder.FLAG_GROUPED | SummaryBuilder.FLAG_SORTED);
 					g.setKeyComponents("p", DOM_PUBLISHER);
+					break;
+	
+				case ROW_KIND_RATING:
+					g.displayDomain = DOM_RATING;
+					summary.addDomain(DOM_RATING, "Cast(" + TBL_BOOKS.dot(DOM_RATING) + " as Integer)", SummaryBuilder.FLAG_GROUPED | SummaryBuilder.FLAG_SORTED | sortDescendingMask);
+					g.setKeyComponents("rat", DOM_RATING);
 					break;
 	
 				case ROW_KIND_FORMAT:
@@ -784,7 +826,7 @@ public class BooklistBuilder {
 				case ROW_KIND_YEAR_PUBLISHED:
 					g.displayDomain = DOM_PUBLICATION_YEAR;
 					// Use our standard glob expression
-					String yearPubExpr = yearGlob(TBL_BOOKS.dot(KEY_DATE_PUBLISHED));
+					String yearPubExpr = yearGlob(TBL_BOOKS.dot(KEY_DATE_PUBLISHED), false);
 					summary.addDomain(DOM_PUBLICATION_YEAR, yearPubExpr, SummaryBuilder.FLAG_GROUPED | SummaryBuilder.FLAG_SORTED);
 					g.setKeyComponents("yrp", DOM_PUBLICATION_YEAR);
 					break;
@@ -792,7 +834,7 @@ public class BooklistBuilder {
 				case ROW_KIND_MONTH_PUBLISHED:
 					g.displayDomain = DOM_PUBLICATION_MONTH;
 					// Use our standard glob expression
-					String monthPubExpr = monthGlob(TBL_BOOKS.dot(KEY_DATE_PUBLISHED));
+					String monthPubExpr = monthGlob(TBL_BOOKS.dot(KEY_DATE_PUBLISHED), false);
 					summary.addDomain(DOM_PUBLICATION_MONTH, monthPubExpr, SummaryBuilder.FLAG_GROUPED | SummaryBuilder.FLAG_SORTED);
 					g.setKeyComponents("mnp", DOM_PUBLICATION_MONTH);
 					break;
@@ -800,7 +842,7 @@ public class BooklistBuilder {
 				case ROW_KIND_YEAR_ADDED:
 					g.displayDomain = DOM_ADDED_YEAR;
 					// Use our standard glob expression
-					String yearAddedExpr = yearGlob(TBL_BOOKS.dot(DOM_ADDED_DATE));
+					String yearAddedExpr = yearGlob(TBL_BOOKS.dot(DOM_ADDED_DATE), true);
 					// TODO: Handle 'DESCENDING'. Requires the navigator construction to use max/min for non-grouped domains that appear in sublevels based on desc/asc.
 					// We don't use DESCENDING sort yet because the 'header' ends up below the detail rows in the flattened table.
 					summary.addDomain(DOM_ADDED_YEAR, yearAddedExpr, SummaryBuilder.FLAG_GROUPED | SummaryBuilder.FLAG_SORTED | sortDescendingMask );
@@ -810,7 +852,7 @@ public class BooklistBuilder {
 				case ROW_KIND_MONTH_ADDED:
 					g.displayDomain = DOM_ADDED_MONTH;
 					// Use our standard glob expression
-					String monthAddedExpr = monthGlob(TBL_BOOKS.dot(DOM_ADDED_DATE));
+					String monthAddedExpr = monthGlob(TBL_BOOKS.dot(DOM_ADDED_DATE), true);
 					// We don't use DESCENDING sort yet because the 'header' ends up below the detail rows in the flattened table.
 					summary.addDomain(DOM_ADDED_MONTH, monthAddedExpr, SummaryBuilder.FLAG_GROUPED | SummaryBuilder.FLAG_SORTED | sortDescendingMask );
 					g.setKeyComponents("mna", DOM_ADDED_MONTH);
@@ -819,31 +861,61 @@ public class BooklistBuilder {
 				case ROW_KIND_DAY_ADDED:
 					g.displayDomain = DOM_ADDED_DAY;
 					// Use our standard glob expression
-					String dayAddedExpr = dayGlob(TBL_BOOKS.dot(DOM_ADDED_DATE));
+					String dayAddedExpr = dayGlob(TBL_BOOKS.dot(DOM_ADDED_DATE), true);
 					// We don't use DESCENDING sort yet because the 'header' ends up below the detail rows in the flattened table.
 					summary.addDomain(DOM_ADDED_DAY, dayAddedExpr, SummaryBuilder.FLAG_GROUPED | SummaryBuilder.FLAG_SORTED | sortDescendingMask );
 					g.setKeyComponents("dya", DOM_ADDED_DAY);
 					break;
+
+					
+				case ROW_KIND_UPDATE_YEAR:
+					g.displayDomain = DOM_UPDATE_YEAR;
+					// Use our standard glob expression
+					String yearUpdatedExpr = yearGlob(TBL_BOOKS.dot(DOM_LAST_UPDATE_DATE), true);
+					// TODO: Handle 'DESCENDING'. Requires the navigator construction to use max/min for non-grouped domains that appear in sublevels based on desc/asc.
+					// We don't use DESCENDING sort yet because the 'header' ends up below the detail rows in the flattened table.
+					summary.addDomain(DOM_UPDATE_YEAR, yearUpdatedExpr, SummaryBuilder.FLAG_GROUPED | SummaryBuilder.FLAG_SORTED | sortDescendingMask );
+					g.setKeyComponents("yru", DOM_UPDATE_YEAR);
+					break;
 	
+				case ROW_KIND_UPDATE_MONTH:
+					g.displayDomain = DOM_UPDATE_MONTH;
+					// Use our standard glob expression
+					String monthUpdatedExpr = monthGlob(TBL_BOOKS.dot(DOM_LAST_UPDATE_DATE), true);
+					// We don't use DESCENDING sort yet because the 'header' ends up below the detail rows in the flattened table.
+					summary.addDomain(DOM_UPDATE_MONTH, monthUpdatedExpr, SummaryBuilder.FLAG_GROUPED | SummaryBuilder.FLAG_SORTED | sortDescendingMask );
+					g.setKeyComponents("mnu", DOM_UPDATE_MONTH);
+					break;
+	
+				case ROW_KIND_UPDATE_DAY:
+					g.displayDomain = DOM_UPDATE_DAY;
+					// Use our standard glob expression
+					String dayUpdatedExpr = dayGlob(TBL_BOOKS.dot(DOM_LAST_UPDATE_DATE), true);
+					// We don't use DESCENDING sort yet because the 'header' ends up below the detail rows in the flattened table.
+					summary.addDomain(DOM_UPDATE_DAY, dayUpdatedExpr, SummaryBuilder.FLAG_GROUPED | SummaryBuilder.FLAG_SORTED | sortDescendingMask );
+					g.setKeyComponents("dyu", DOM_UPDATE_DAY);
+					break;
+	
+					
 				case ROW_KIND_YEAR_READ:
 					g.displayDomain = DOM_READ_YEAR;
 					// TODO: Handle 'DESCENDING'. Requires the navigator construction to use max/min for non-grouped domains that appear in sublevels based on desc/asc.
 					// We don't use DESCENDING sort yet because the 'header' ends up below the detail rows in the flattened table.
-					summary.addDomain(DOM_READ_YEAR, yearGlob(TBL_BOOKS.dot(DOM_READ_END)), SummaryBuilder.FLAG_GROUPED | SummaryBuilder.FLAG_SORTED) ; // | SummaryBuilder.FLAG_SORT_DESCENDING);
+					summary.addDomain(DOM_READ_YEAR, yearGlob(TBL_BOOKS.dot(DOM_READ_END), false), SummaryBuilder.FLAG_GROUPED | SummaryBuilder.FLAG_SORTED) ; // | SummaryBuilder.FLAG_SORT_DESCENDING);
 					g.setKeyComponents("yrr", DOM_READ_YEAR);
 					break;
 	
 				case ROW_KIND_MONTH_READ:
 					g.displayDomain = DOM_READ_MONTH;
 					// We don't use DESCENDING sort yet because the 'header' ends up below the detail rows in the flattened table.
-					summary.addDomain(DOM_READ_MONTH, monthGlob(TBL_BOOKS.dot(DOM_READ_END)), SummaryBuilder.FLAG_GROUPED | SummaryBuilder.FLAG_SORTED ); // | SummaryBuilder.FLAG_SORT_DESCENDING);
+					summary.addDomain(DOM_READ_MONTH, monthGlob(TBL_BOOKS.dot(DOM_READ_END), false), SummaryBuilder.FLAG_GROUPED | SummaryBuilder.FLAG_SORTED ); // | SummaryBuilder.FLAG_SORT_DESCENDING);
 					g.setKeyComponents("mnr", DOM_READ_MONTH);
 					break;
 	
 				case ROW_KIND_DAY_READ:
 					g.displayDomain = DOM_READ_DAY;
 					// We don't use DESCENDING sort yet because the 'header' ends up below the detail rows in the flattened table.
-					summary.addDomain(DOM_READ_DAY, dayGlob(TBL_BOOKS.dot(DOM_READ_END)), SummaryBuilder.FLAG_GROUPED | SummaryBuilder.FLAG_SORTED ); // | SummaryBuilder.FLAG_SORT_DESCENDING);
+					summary.addDomain(DOM_READ_DAY, dayGlob(TBL_BOOKS.dot(DOM_READ_END), false), SummaryBuilder.FLAG_GROUPED | SummaryBuilder.FLAG_SORTED ); // | SummaryBuilder.FLAG_SORT_DESCENDING);
 					g.setKeyComponents("dyr", DOM_READ_DAY);
 					break;
 	
@@ -909,7 +981,7 @@ public class BooklistBuilder {
 			JoinContext join;
 	
 			// If there is a bookshelf specified, start the join there. Otherwise, start with the BOOKS table.
-			if (!bookshelf.equals("")) {
+			if (hasGroupBOOKSHELF || !bookshelf.equals("")) {
 				join = new JoinContext(TBL_BOOKSHELF)
 					.start()
 					.join(TBL_BOOK_BOOKSHELF)
@@ -975,7 +1047,15 @@ public class BooklistBuilder {
 			if (!bookshelf.equals("")) {
 				if (!where.equals(""))
 					where += " and ";
-				where += "(" + TBL_BOOKSHELF.dot(DOM_BOOKSHELF_NAME) + " = '" + CatalogueDBAdapter.encodeString(bookshelf) + "')";
+				if (hasGroupBOOKSHELF) {
+					where += "Exists(Select NULL From "  + TBL_BOOK_BOOKSHELF + " z1 join " + TBL_BOOKSHELF 
+							+ " z2 on (z2." + DOM_ID + " = z1." + DOM_BOOKSHELF_ID + ")"
+							+ " where z2." + DOM_BOOKSHELF_NAME + " = '" + CatalogueDBAdapter.encodeString(bookshelf) + "'"
+							+ " and z1." + DOM_BOOK + " = " + TBL_BOOKS.dot(DOM_ID)
+							+ ")";
+				} else {
+					where += "(" + TBL_BOOKSHELF.dot(DOM_BOOKSHELF_NAME) + " = '" + CatalogueDBAdapter.encodeString(bookshelf) + "')";
+				}
 			}
 			if (!authorWhere.equals("")) {
 				if (!where.equals(""))
@@ -1002,7 +1082,7 @@ public class BooklistBuilder {
 			if(!searchText.equals("")) {
 				if (!where.equals(""))
 					where += " and ";
-				where += "(" + TBL_BOOKS.dot(DOM_ID) + " in (select docid from " + TBL_BOOKS_FTS + " where " + TBL_BOOKS_FTS + " match '" + encodeString(searchText) + "'))";
+				where += "(" + TBL_BOOKS.dot(DOM_ID) + " in (select docid from " + TBL_BOOKS_FTS + " where " + TBL_BOOKS_FTS + " match '" + encodeString(CatalogueDBAdapter.cleanupFtsCriterion(searchText)) + "'))";
 			}
 	
 			// Add support for book filter: READ

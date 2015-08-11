@@ -28,7 +28,6 @@ import android.os.Build;
 import android.os.Bundle;
 
 import com.eleybourn.bookcatalogue.CatalogueDBAdapter;
-import com.eleybourn.bookcatalogue.backup.tar.TarBackupContainer;
 import com.eleybourn.bookcatalogue.utils.Utils;
 
 /**
@@ -46,6 +45,8 @@ public class BackupInfo {
 	public static final String INFO_CREATEDATE = "CreateDate";
 	/** Standard INFO item */
 	public static final String INFO_NUMBOOKS = "NumBooks";
+	/** Standard INFO item */
+	public static final String INFO_NUMCOVERS = "NumCovers";
 	/** Standard INFO item */
 	public static final String INFO_APPPACKAGE = "AppPackage";
 	/** Standard INFO item */
@@ -78,13 +79,14 @@ public class BackupInfo {
 	 * 
 	 * @return				a new BackupInfo object
 	 */
-	public static BackupInfo createInfo(BackupContainer container, CatalogueDBAdapter db, Context context) {
+	public static BackupInfo createInfo(BackupContainer container, CatalogueDBAdapter db, Context context, int bookCount, int coverCount) {
 		Bundle info = new Bundle();
 	
 		info.putInt(INFO_ARCHVERSION, container.getVersion());
 		info.putInt(INFO_COMPATARCHIVER, 1);
 		info.putString(INFO_CREATEDATE, Utils.toSqlDateTime(new Date()));
-		info.putInt(INFO_NUMBOOKS, (int)db.getBookCount());
+		info.putInt(INFO_NUMBOOKS, bookCount);
+		info.putInt(INFO_NUMCOVERS, coverCount);
 	    try {
 	    	// Get app info
 	        PackageManager manager = context.getPackageManager(); 
@@ -198,6 +200,15 @@ public class BackupInfo {
 	 * 
 	 * @return
 	 */
+	public boolean hasCoverCount() {
+		return mBundle.containsKey(INFO_NUMCOVERS);
+	}
+
+	/**
+	 * Accessor
+	 * 
+	 * @return
+	 */
 	public boolean hasCovers() {
 		return mBundle.getBoolean(INFO_HAS_COVERS);
 	}
@@ -229,8 +240,22 @@ public class BackupInfo {
 		return mBundle.getBoolean(INFO_HAS_BOOKLIST_STYLES);
 	}
 	
+	/**
+	 * Accessor
+	 * 
+	 * @return
+	 */
 	public int getBookCount() {
 		return mBundle.getInt(INFO_NUMBOOKS);
+	}
+
+	/**
+	 * Accessor
+	 * 
+	 * @return
+	 */
+	public int getCoverCount() {
+		return mBundle.getInt(INFO_NUMCOVERS);
 	}
 
 }

@@ -24,10 +24,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import net.philipwarner.taskqueue.QueueManager;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnDismissListener;
 import android.content.Intent;
@@ -77,6 +75,7 @@ public class AdministrationFunctions extends ActivityWithTasks {
 	public void onCreate(Bundle savedInstanceState) {
 		try {
 			super.onCreate(savedInstanceState);
+			setTitle(R.string.administration_label);
 			mDbHelper = new CatalogueDBAdapter(this);
 			mDbHelper.open();
 			setContentView(R.layout.administration_functions);

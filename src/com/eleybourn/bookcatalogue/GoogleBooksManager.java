@@ -1,5 +1,6 @@
 package com.eleybourn.bookcatalogue;
 
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -9,6 +10,7 @@ import javax.xml.parsers.SAXParserFactory;
 
 import org.xml.sax.SAXException;
 
+import android.net.ParseException;
 import android.os.Bundle;
 
 import com.eleybourn.bookcatalogue.utils.Logger;
@@ -18,6 +20,24 @@ import com.eleybourn.bookcatalogue.utils.Utils;
 
 public class GoogleBooksManager {
 
+	static public File getThumbnailFromIsbn(String isbn) {
+		Bundle b = new Bundle();
+		try {
+			searchGoogle(isbn, "", "", b, true);
+			if (b.containsKey(SearchGoogleBooksEntryHandler.THUMBNAIL_KEY)) {
+				File f = new File(b.getString(SearchGoogleBooksEntryHandler.THUMBNAIL_KEY));
+				File newName = new File(f.getAbsolutePath() + "_" + isbn);
+				f.renameTo(newName);
+				return newName;
+			} else {
+				return null;
+			}
+		} catch (Exception e) {
+			Logger.logError(e, "Error getting thumbnail from Google");
+			return null;
+		}
+	}
+
 	static public void searchGoogle(String mIsbn, String author, String title, Bundle bookData, boolean fetchThumbnail) {
 		//replace spaces with %20
 		author = author.replace(" ", "%20");
@@ -25,9 +45,9 @@ public class GoogleBooksManager {
 
 		String path = "http://books.google.com/books/feeds/volumes";
 		if (mIsbn.equals("")) {
-			path += "?q=" + "intitle:"+title+"+inauthor:"+author+"";
+			path += "?q=" + "intitle%3A"+title+"%2Binauthor%3A"+author+"";
 		} else {
-			path += "?q=ISBN:" + mIsbn;
+			path += "?q=ISBN%3C" + mIsbn + "%3E";
 		}
 		URL url;
 
@@ -54,6 +74,8 @@ public class GoogleBooksManager {
 		} catch (MalformedURLException e) {
 			Logger.logError(e);
 		} catch (ParserConfigurationException e) {
+			Logger.logError(e);
+		} catch (ParseException e) {
 			Logger.logError(e);
 		} catch (SAXException e) {
 			Logger.logError(e);

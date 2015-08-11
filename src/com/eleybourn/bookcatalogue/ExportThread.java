@@ -1,21 +1,13 @@
 package com.eleybourn.bookcatalogue;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-
-import android.database.Cursor;
 
 import com.eleybourn.bookcatalogue.backup.CsvExporter;
 import com.eleybourn.bookcatalogue.backup.Exporter;
-import com.eleybourn.bookcatalogue.backup.Exporter.ExportListener;
-import com.eleybourn.bookcatalogue.booklist.DatabaseDefinitions;
 import com.eleybourn.bookcatalogue.utils.Logger;
 import com.eleybourn.bookcatalogue.utils.StorageUtils;
-import com.eleybourn.bookcatalogue.utils.Utils;
 
 /**
  * Class to handle export in a separate thread.
@@ -63,6 +55,7 @@ public class ExportThread extends ManagedTask {
 		public void setMax(int max) {
 			mManager.setMax(ExportThread.this, max);
 		}
+
 	};
 
 	@Override
@@ -74,7 +67,7 @@ public class ExportThread extends ManagedTask {
 		try {
 			FileOutputStream out = new FileOutputStream(mTempFileName);
 			CsvExporter exporter = new CsvExporter();
-			exporter.export(out, mOnExportListener, Exporter.EXPORT_ALL);
+			exporter.export(out, mOnExportListener, Exporter.EXPORT_ALL, null);
 			if (out != null && out.getChannel().isOpen()) {
 				out.close();
 			}
