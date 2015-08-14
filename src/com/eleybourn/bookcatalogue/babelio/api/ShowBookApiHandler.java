@@ -152,7 +152,7 @@ public abstract class ShowBookApiHandler extends ApiHandler {
         // We sign the GET request so we get shelves
         String html = mManager.executeRaw(request, true);
 
-        Pattern pattern = Pattern.compile("(?s)(<div class=\"module_t4\".+)(<table>(.+)<div class=\"module_t1\">[\t\r\n]+<h2 class=\"etiquettes\")");
+        Pattern pattern = Pattern.compile("(?s)(<div class=\"module_t4\".+)(<table>(.+)class=\"bouton_ajouter_critique\")");
         Matcher matcher = pattern.matcher(html);
     	boolean matchFound = matcher.find();
         
